@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <RootNamespace>Topiary</RootNamespace>
+        <Nullable>enable</Nullable>
+        <AssemblyName>Topiary</AssemblyName>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <DefineConstants>OS_WINDOWS</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+        <DefineConstants>OS_LINUX</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('FreeBSD'))">
+        <DefineConstants>OS_FREEBSD</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+        <DefineConstants>OS_MAC</DefineConstants>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+        <None Update="topi.dylib">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>

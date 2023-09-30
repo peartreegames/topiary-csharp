@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topiary", "Topiary\Topiary.csproj", "{CC465AB5-A06C-4D2F-8A9B-EA50B5F6801A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{B0001011-F9F6-4808-85A9-86556CDBA72A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CC465AB5-A06C-4D2F-8A9B-EA50B5F6801A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC465AB5-A06C-4D2F-8A9B-EA50B5F6801A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC465AB5-A06C-4D2F-8A9B-EA50B5F6801A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC465AB5-A06C-4D2F-8A9B-EA50B5F6801A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0001011-F9F6-4808-85A9-86556CDBA72A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0001011-F9F6-4808-85A9-86556CDBA72A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0001011-F9F6-4808-85A9-86556CDBA72A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0001011-F9F6-4808-85A9-86556CDBA72A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
