@@ -25,6 +25,9 @@
         <None Update="topi.dylib">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Update="topi.dll">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>
