@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Topiary
 {
@@ -11,18 +12,25 @@ namespace Topiary
 
         public delegate void Subscriber(ref TopiValue value);
 
-        public static IntPtr InitVm(string path, OnDialogueDelegate onDialogue, OnChoicesDelegate onChoices)
+        public static IntPtr InitVm(string source, OnDialogueDelegate onDialogue, OnChoicesDelegate onChoices)
         {
             var dialoguePtr = Marshal.GetFunctionPointerForDelegate(onDialogue);
             var choicesPtr = Marshal.GetFunctionPointerForDelegate(onChoices);
-            var ptr = createVm(path, path.Length, dialoguePtr, choicesPtr);
+            var ptr = createVm(source, source.Length, dialoguePtr, choicesPtr);
             return ptr;
         }
 
         public static void DestroyVm(IntPtr vmPtr) => destroyVm(vmPtr);
         public static void Run(IntPtr vmPtr) => run(vmPtr);
         public static void Continue(IntPtr vmPtr) => selectContinue(vmPtr);
-        public static void Compile(string path) => compile(path, path.Length);
+        public static string Compile(string source)
+        {
+            var bytes = Encoding.ASCII.GetBytes(source);
+            var output = new byte[bytes.Length * 2];
+            compile(bytes, bytes.Length, output, source.Length * 2);
+            return Encoding.ASCII.GetString(output);
+        }
+
         public static void SelectChoice(IntPtr vmPtr, int index) => selectChoice(vmPtr, index);
 
         public static TopiValue GetVariable(IntPtr vmPtr, string name)
@@ -42,7 +50,7 @@ namespace Topiary
 #elif OS_WINDOWS
         [DllImport("topi.dll")]
 #endif
-        private static extern IntPtr createVm(string path, int pathLength, IntPtr onDialoguePtr, IntPtr onChoicesPtr);
+        private static extern IntPtr createVm(string source, int sourceLength, IntPtr onDialoguePtr, IntPtr onChoicesPtr);
 
 #if OS_MAC
         [DllImport("topi.dylib")]
@@ -56,7 +64,7 @@ namespace Topiary
 #elif OS_WINDOWS
         [DllImport("topi.dll")]
 #endif
-        private static extern void compile(string path, int pathLength);
+        private static extern void compile(byte[] source, int sourceLength, byte[] output, int capacity);
 
 #if OS_MAC
         [DllImport("topi.dylib")]

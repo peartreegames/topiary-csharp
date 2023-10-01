@@ -1,4 +1,4 @@
-var value = ""
+var value = "111"
 === START {
     :: "A person approaches."
     :Stranger: "Hey there."
