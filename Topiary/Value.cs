@@ -13,6 +13,8 @@ namespace Topiary
         public float numberValue;
 
         [FieldOffset(0)] public IntPtr stringValue;
+
+        [FieldOffset(0)] public TopiList listValue;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -26,7 +28,8 @@ namespace Topiary
             Nil,
             Bool,
             Number,
-            String
+            String,
+            List
         }
         
         public object? Value => tag switch
@@ -35,7 +38,32 @@ namespace Topiary
             Tag.Bool => data.boolValue != 0,
             Tag.Number => data.numberValue,
             Tag.String => Marshal.PtrToStringAnsi(data.stringValue),
+            Tag.List => data.listValue.Value,
             _ => null
         };
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TopiList
+    {
+        public IntPtr listPtr;
+        [MarshalAs(UnmanagedType.U2)]
+        public short count;
+
+        public TopiValue[] Value
+        {
+            get
+            {
+                var value = new TopiValue[count];
+                var offset = 0;
+                for (var i = 0; i < count; i++)
+                {
+                    var ptr = Marshal.ReadIntPtr(listPtr, offset);
+                    value[i] = Marshal.PtrToStructure<TopiValue>(ptr);
+                    offset += Marshal.SizeOf<TopiValue>();
+                }
+                return value;
+            }
+        }
     }
 }

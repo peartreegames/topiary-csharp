@@ -1,4 +1,5 @@
 var value = "111"
+var list = [1,2,3,4,55]
 === START {
     :: "A person approaches."
     :Stranger: "Hey there."

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -12,7 +13,7 @@ namespace Topiary
 
         public delegate void Subscriber(ref TopiValue value);
 
-        public static IntPtr InitVm(string source, OnDialogueDelegate onDialogue, OnChoicesDelegate onChoices)
+        public static IntPtr InitVm(byte[] source, OnDialogueDelegate onDialogue, OnChoicesDelegate onChoices)
         {
             var dialoguePtr = Marshal.GetFunctionPointerForDelegate(onDialogue);
             var choicesPtr = Marshal.GetFunctionPointerForDelegate(onChoices);
@@ -23,20 +24,25 @@ namespace Topiary
         public static void DestroyVm(IntPtr vmPtr) => destroyVm(vmPtr);
         public static void Run(IntPtr vmPtr) => run(vmPtr);
         public static void Continue(IntPtr vmPtr) => selectContinue(vmPtr);
-        public static string Compile(string source)
+        public static byte[] Compile(string source)
         {
-            var bytes = Encoding.ASCII.GetBytes(source);
-            var output = new byte[bytes.Length * 2];
-            compile(bytes, bytes.Length, output, source.Length * 2);
-            return Encoding.ASCII.GetString(output);
+            var bytes = Encoding.UTF8.GetBytes(source);
+            var output = new byte[bytes.Length * 4];
+            compile(bytes, bytes.Length, output, output.Length);
+            return output;
         }
 
         public static void SelectChoice(IntPtr vmPtr, int index) => selectChoice(vmPtr, index);
 
-        public static TopiValue GetVariable(IntPtr vmPtr, string name)
+        public static TopiValue GetValue(IntPtr vmPtr, string name)
         {
-            tryGetVariable(vmPtr, name, name.Length, out var value);
+            tryGetValue(vmPtr, name, name.Length, out var value);
             return value;
+        }
+
+        public static void DestroyValue(ref TopiValue value)
+        {
+            destroyValue(ref value);
         }
 
         public static void Subscribe(IntPtr vmPtr, string name, Subscriber callback) => subscribe(vmPtr, name,
@@ -50,7 +56,7 @@ namespace Topiary
 #elif OS_WINDOWS
         [DllImport("topi.dll")]
 #endif
-        private static extern IntPtr createVm(string source, int sourceLength, IntPtr onDialoguePtr, IntPtr onChoicesPtr);
+        private static extern IntPtr createVm(byte[] source, int sourceLength, IntPtr onDialoguePtr, IntPtr onChoicesPtr);
 
 #if OS_MAC
         [DllImport("topi.dylib")]
@@ -91,7 +97,14 @@ namespace Topiary
 #elif OS_WINDOWS
         [DllImport("topi.dll")]
 #endif
-        private static extern bool tryGetVariable(IntPtr vmPtr, string name, int nameLength, out TopiValue value);
+        private static extern bool tryGetValue(IntPtr vmPtr, string name, int nameLength, out TopiValue value);
+
+#if OS_MAC
+        [DllImport("topi.dylib")]
+#elif OS_WINDOWS
+        [DllImport("topi.dll")]
+#endif
+        private static extern bool destroyValue(ref TopiValue value);
 
 #if OS_MAC
         [DllImport("topi.dylib")]
