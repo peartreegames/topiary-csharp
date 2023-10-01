@@ -46,8 +46,7 @@ namespace Test
         {
             var text = File.ReadAllText("./test.topi");
             var compiled = Library.Compile(text);
-            Console.WriteLine($"COMPILED---{compiled}");
-            File.WriteAllText("./test.topib", compiled, Encoding.ASCII);
+            File.WriteAllBytes("./test.topib", compiled);
             Assert.That(Path.Exists("./test.topib"), Is.True);
         }
 
@@ -57,14 +56,15 @@ namespace Test
         [Test]
         public void CreateVm()
         {
-            var data = File.ReadAllText("./test.topib");
+            var data = File.ReadAllBytes("./test.topib");
             var vmPtr = Library.InitVm(data, OnDialogue, OnChoices);
             var print = new Library.Subscriber(Print);
             Library.Subscribe(vmPtr, "value", print);
             Library.Run(vmPtr);
             Library.Unsubscribe(vmPtr, "value", print);
-            var value = Library.GetVariable(vmPtr, "value");
-            Console.WriteLine($"VALUE FINAL:: {value.tag} = {value.Value}");
+            var list = Library.GetValue(vmPtr, "list");
+            Console.WriteLine($"LIST VALUE:: {list.tag} = {list.Value}");
+            Library.DestroyValue(ref list);
             Library.DestroyVm(vmPtr);
         }
     }
