@@ -1,5 +1,7 @@
 var value = "111"
 var list = [1,2,3,4,55]
+var set = {"some", "string", "values"}
+var map = {0: 0.001, 1: 1.111, 2: true}
 === START {
     :: "A person approaches."
     :Stranger: "Hey there."

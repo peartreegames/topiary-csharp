@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using NUnit.Framework;
 using Topiary;
 
@@ -63,8 +62,14 @@ namespace Test
             Library.Run(vmPtr);
             Library.Unsubscribe(vmPtr, "value", print);
             var list = Library.GetValue(vmPtr, "list");
-            Console.WriteLine($"LIST VALUE:: {list.tag} = {list.Value}");
+            Console.WriteLine($"LIST VALUE:: {list.tag} = {list}");
+            var set = Library.GetValue(vmPtr, "set");
+            Console.WriteLine($"SET VALUE:: {set.tag} = {set}");
+            var map = Library.GetValue(vmPtr, "map");
+            Console.WriteLine($"MAP VALUE:: {map.tag} = {map}");
             Library.DestroyValue(ref list);
+            Library.DestroyValue(ref set);
+            Library.DestroyValue(ref map);
             Library.DestroyVm(vmPtr);
         }
     }
