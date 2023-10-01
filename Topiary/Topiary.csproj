@@ -7,15 +7,16 @@
         <AssemblyName>Topiary</AssemblyName>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>topiary</PackageId>
-        <Version>0.1.0</Version>
+        <Version>0.2.1</Version>
         <Title>Topiary Bindings</Title>
         <Authors>Peartree Games</Authors>
         <Description>C# Bindings for Topiary, a narrative scripting language</Description>
         <Copyright>Peartree Games</Copyright>
         <PackageProjectUrl>https://github.com/peartreegames/topiary-csharp</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/peartreegames/topiary-csharp/blob/main/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/peartreegames/topiary-csharp</RepositoryUrl>
         <Company>Peartree Games</Company>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
@@ -39,6 +40,10 @@
         <None Update="topi.dll">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="../README.md" Pack="true" PackagePath="\"/>
+        <None Include="../LICENSE" Pack="true" PackagePath=""/>
     </ItemGroup>
 
 </Project>
