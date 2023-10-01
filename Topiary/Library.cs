@@ -40,10 +40,9 @@ namespace Topiary
             return value;
         }
 
-        public static void DestroyValue(ref TopiValue value)
-        {
-            destroyValue(ref value);
-        }
+        // Mixing our memory management here is a bad idea.
+        // Will need to come up with a better solution.
+        public static void DestroyValue(ref TopiValue value) => destroyValue(ref value);
 
         public static void Subscribe(IntPtr vmPtr, string name, Subscriber callback) => subscribe(vmPtr, name,
             name.Length, Marshal.GetFunctionPointerForDelegate(callback));
@@ -104,7 +103,7 @@ namespace Topiary
 #elif OS_WINDOWS
         [DllImport("topi.dll")]
 #endif
-        private static extern bool destroyValue(ref TopiValue value);
+        private static extern void destroyValue(ref TopiValue value);
 
 #if OS_MAC
         [DllImport("topi.dylib")]
