@@ -5,6 +5,17 @@
         <RootNamespace>Topiary</RootNamespace>
         <Nullable>enable</Nullable>
         <AssemblyName>Topiary</AssemblyName>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>topiary</PackageId>
+        <Version>0.1.0</Version>
+        <Title>Topiary Bindings</Title>
+        <Authors>Peartree Games</Authors>
+        <Description>C# Bindings for Topiary, a narrative scripting language</Description>
+        <Copyright>Peartree Games</Copyright>
+        <PackageProjectUrl>https://github.com/peartreegames/topiary-csharp</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/peartreegames/topiary-csharp/blob/main/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/peartreegames/topiary-csharp</RepositoryUrl>
+        <Company>Peartree Games</Company>
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">

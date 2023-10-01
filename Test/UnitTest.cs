@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using NUnit.Framework;
 using Topiary;
 
@@ -34,6 +35,7 @@ namespace Test
             Console.WriteLine($"Choice: {index}");
             Library.SelectChoice(vmPtr, index);
         }
+
         [SetUp]
         public void Setup()
         {
@@ -42,17 +44,25 @@ namespace Test
         [Test]
         public void Compile()
         {
-            Library.Compile("./test.topi");
+            var text = File.ReadAllText("./test.topi");
+            var compiled = Library.Compile(text);
+            Console.WriteLine(compiled);
+            var fs = File.Create("./test.topib");
+            fs.Close();
+            using var writer = new StreamWriter("./test.topib", true, Encoding.ASCII);
+            writer.Write(compiled);
+            writer.Close();
             Assert.That(Path.Exists("./test.topib"), Is.True);
         }
 
-        private static void Print(ref TopiValue value) => 
+        private static void Print(ref TopiValue value) =>
             Console.WriteLine($"PRINT:: {value.tag} = {value.Value}");
-        
+
         [Test]
         public void CreateVm()
         {
-            var vmPtr = Library.InitVm("./test.topib", OnDialogue, OnChoices);
+            var data = File.ReadAllText("./test/topib");
+            var vmPtr = Library.InitVm(data, OnDialogue, OnChoices);
             var print = new Library.Subscriber(Print);
             Library.Subscribe(vmPtr, "value", print);
             Library.Run(vmPtr);
