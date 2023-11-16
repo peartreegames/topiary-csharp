@@ -1,9 +1,15 @@
-var value = "111"
+var value = 111
 var list = [1,2,3,4,55]
+var set = {"one", "two"}
+var map = {1: "one", 2: "two"}
+
+extern var sqrPrint = |x| print(x * x)
+
 === START {
     :: "A person approaches."
     :Stranger: "Hey there."
-    value = "123 123 123"
+    value = 123
+    sqrPrint(value)
     fork^ {
         ~ "Greet them." {
             :Drew: "Oh, uh, nice to meet you. My name is Drew."

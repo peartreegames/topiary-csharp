@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 namespace Topiary
@@ -29,41 +31,89 @@ namespace Topiary
             Bool,
             Number,
             String,
-            List
+            List,
+            Set,
+            Map,
         }
-        
+
         public object? Value => tag switch
         {
-            Tag.Nil => null,
-            Tag.Bool => data.boolValue != 0,
+            Tag.Bool => data.boolValue == 1,
             Tag.Number => data.numberValue,
             Tag.String => Marshal.PtrToStringAnsi(data.stringValue),
-            Tag.List => data.listValue.Value,
-            _ => null
+            Tag.List => data.listValue.List,
+            Tag.Set => data.listValue.Set,
+            Tag.Map => data.listValue.Map,
+            _ => null 
         };
+
+        public override string ToString() =>
+            tag switch
+            {
+                Tag.Bool => data.boolValue == 1 ? "True" : "False",
+                Tag.Number => data.numberValue.ToString(CultureInfo.CurrentCulture),
+                Tag.String => Marshal.PtrToStringAnsi(data.stringValue),
+                Tag.List => $"[{string.Join(", ", data.listValue.List)}]",
+                Tag.Set => $"{{{string.Join(", ", data.listValue.Set)}}}",
+                Tag.Map => $"{{{string.Join(", ", data.listValue.Map)}}}",
+                _ => $"{tag}: null"
+            } ?? throw new InvalidOperationException();
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct TopiList
     {
         public IntPtr listPtr;
-        [MarshalAs(UnmanagedType.U2)]
-        public short count;
+        [MarshalAs(UnmanagedType.U2)] public short count;
 
-        public TopiValue[] Value
+        public TopiValue[] List 
         {
             get
             {
                 var value = new TopiValue[count];
-                var offset = 0;
+                var ptr = listPtr;
                 for (var i = 0; i < count; i++)
                 {
-                    var ptr = Marshal.ReadIntPtr(listPtr, offset);
                     value[i] = Marshal.PtrToStructure<TopiValue>(ptr);
-                    offset += Marshal.SizeOf<TopiValue>();
+                    ptr = IntPtr.Add(ptr, Marshal.SizeOf<TopiValue>());
                 }
                 return value;
             }
         }
+        
+        public HashSet<TopiValue> Set
+        {
+            get
+            {
+                var set = new HashSet<TopiValue>(count);
+                var ptr = listPtr;
+                for (var i = 0; i < count; i++)
+                {
+                    set.Add(Marshal.PtrToStructure<TopiValue>(ptr));
+                    ptr = IntPtr.Add(ptr, Marshal.SizeOf<TopiValue>());
+                }
+                return set;
+            }
+        }
+        
+        public Dictionary<TopiValue, TopiValue> Map
+        {
+            get
+            {
+                var map = new Dictionary<TopiValue, TopiValue>(count);
+                var ptr = listPtr;
+                for (var i = 0; i < count; i++)
+                {
+                    var key = Marshal.PtrToStructure<TopiValue>(ptr);
+                    ptr = IntPtr.Add(ptr, Marshal.SizeOf<TopiValue>());
+                    var value = Marshal.PtrToStructure<TopiValue>(ptr);
+                    ptr = IntPtr.Add(ptr, Marshal.SizeOf<TopiValue>());
+                    map.Add(key, value);
+                }
+                return map;
+            }
+        }
+        
+        
     }
 }
