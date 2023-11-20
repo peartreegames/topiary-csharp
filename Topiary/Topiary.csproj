@@ -7,7 +7,7 @@
         <AssemblyName>Topiary</AssemblyName>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>topiary</PackageId>
-        <Version>0.2.1</Version>
+        <Version>0.3.0</Version>
         <Title>Topiary Bindings</Title>
         <Authors>Peartree Games</Authors>
         <Description>C# Bindings for Topiary, a narrative scripting language</Description>
@@ -44,6 +44,9 @@
     <ItemGroup>
         <None Include="../README.md" Pack="true" PackagePath="\"/>
         <None Include="../LICENSE" Pack="true" PackagePath=""/>
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     </ItemGroup>
 
 </Project>

@@ -3,12 +3,13 @@ var list = [1,2,3,4,55]
 var set = {"one", "two"}
 var map = {1: "one", 2: "two"}
 
-extern var sqrPrint = |x| print(x * x)
+// set to sum to ensure externs are being called
+extern var sqrPrint = |x| print(x + x)
+extern var sqr = |x| return x + x
 
 === START {
     :: "A person approaches."
-    :Stranger: "Hey there."
-    value = 123
+    :Stranger: "Hey there. {sqr(123)}"
     sqrPrint(value)
     fork^ {
         ~ "Greet them." {

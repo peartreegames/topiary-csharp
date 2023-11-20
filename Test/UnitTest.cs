@@ -1,6 +1,9 @@
+// #define ASYNC
+
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Topiary;
 
@@ -11,19 +14,21 @@ namespace Test
         private static void OnDialogue(IntPtr vmPtr, Dialogue dialogue)
         {
             Console.WriteLine($":{dialogue.Speaker}: {dialogue.Content} {string.Join('#', dialogue.Tags)}");
+#if ASYNC
+            ContinueAsync(vmPtr);
+#else
+            Library.Continue(vmPtr);
+#endif
+        }
+
+        private static async void ContinueAsync(IntPtr vmPtr)
+        {
+            await Task.Delay(200);
             Library.Continue(vmPtr);
         }
 
-        private static void OnChoices(IntPtr vmPtr, IntPtr choicesPtr, byte length)
+        private static void OnChoices(IntPtr vmPtr, Choice[] choices)
         {
-            var choices = new Choice[length];
-            var ptr = choicesPtr;
-            for (var i = 0; i < length; i++)
-            {
-                choices[i] = Marshal.PtrToStructure<Choice>(ptr);
-                ptr = IntPtr.Add(ptr, Marshal.SizeOf<Choice>());
-            }
-
             foreach (var choice in choices)
             {
                 Console.WriteLine($"{choice.Content}");
@@ -51,11 +56,18 @@ namespace Test
         private static void Print(ref TopiValue value) =>
             Console.WriteLine($"PRINT:: {value.tag} = {value.Value}");
 
-        private static TopiValue SqrPrint(IntPtr args, byte len)
+        [Topi("sqrPrint")]
+        private static void SqrPrint(TopiValue value)
         {
-            var arg = Marshal.PtrToStructure<TopiValue>(args);
-            Console.WriteLine(arg.data.numberValue * arg.data.numberValue);
-            return default;
+            var i = value.Int;
+            Console.WriteLine($"SqrPrint:: {i * i}");
+        }
+
+        [Topi("sqr")]
+        public static TopiValue Sqr(TopiValue value)
+        {
+            var i = value.Int;
+            return new TopiValue(i * i);
         }
 
         [Test]
@@ -63,10 +75,18 @@ namespace Test
         {
             var data = File.ReadAllBytes("./test.topib");
             var vmPtr = Library.InitVm(data, OnDialogue, OnChoices);
-            Library.SetExternFunction(vmPtr, "sqrPrint", SqrPrint);
+            Library.BindFunctions(vmPtr, new []{typeof(Tests).Assembly});
             var print = new Library.Subscriber(Print);
             Library.Subscribe(vmPtr, "value", print);
-            Library.Run(vmPtr);
+            var err = new StringBuilder(1028);
+            Library.Run(vmPtr, out var errLine, err, err.Capacity);
+            if (errLine != 0)
+            {
+                Console.WriteLine($"Error line {errLine}: {err}");
+                Library.DestroyVm(vmPtr);
+                return;
+            }
+
             Library.Unsubscribe(vmPtr, "value", print);
             var list = Library.GetValue(vmPtr, "list");
             Console.WriteLine($"{list.tag} = {list}");
