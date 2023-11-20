@@ -193,4 +193,79 @@ namespace Topiary
             }
         }
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TopiList
+    {
+        public IntPtr listPtr;
+        [MarshalAs(UnmanagedType.U2)]
+        public short count;
+
+        public TopiValue[] Value
+        {
+            get
+            {
+                var value = new TopiValue[count];
+                var offset = 0;
+                for (var i = 0; i < count; i++)
+                {
+                    value[i] = Marshal.PtrToStructure<TopiValue>(listPtr + offset);
+                    offset += Marshal.SizeOf<TopiValue>();
+                }
+                return value;
+            }
+        }
+    }
+    
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TopiSet
+    {
+        public IntPtr ptr;
+        [MarshalAs(UnmanagedType.U2)]
+        public short count;
+
+        public HashSet<TopiValue> Value
+        {
+            get
+            {
+                var value = new HashSet<TopiValue>();
+                var offset = 0;
+                for (var i = 0; i < count; i++)
+                {
+                    value.Add(Marshal.PtrToStructure<TopiValue>(ptr + offset));
+                    offset += Marshal.SizeOf<TopiValue>();
+                }
+                return value;
+            }
+        }
+    }
+    
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TopiMap
+    {
+        public IntPtr ptr;
+        [MarshalAs(UnmanagedType.U2)]
+        public short count;
+
+        public Dictionary<TopiValue, TopiValue> Value
+        {
+            get
+            {
+                var value = new Dictionary<TopiValue, TopiValue>();
+                var offset = 0;
+                var size = Marshal.SizeOf<TopiValue>();
+                for (var i = 0; i < count; i++)
+                {
+                    var key = Marshal.PtrToStructure<TopiValue>(ptr + offset);
+                    offset += size; 
+                    value.Add(key, Marshal.PtrToStructure<TopiValue>(ptr + offset));
+                    offset += size;
+                }
+                return value;
+            }
+        }
+    }
+    
+    
 }
