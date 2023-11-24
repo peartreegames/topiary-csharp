@@ -2,7 +2,6 @@
 
 using System;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Topiary;
@@ -11,33 +10,29 @@ namespace Test
 {
     public class Tests
     {
-        private static void OnDialogue(IntPtr vmPtr, Dialogue dialogue)
+        private static void OnDialogue(Story story, Dialogue dialogue)
         {
             Console.WriteLine($":{dialogue.Speaker}: {dialogue.Content} {string.Join('#', dialogue.Tags)}");
-#if ASYNC
-            ContinueAsync(vmPtr);
-#else
-            Library.Continue(vmPtr);
-#endif
+            story.Continue();
         }
 
         private static async void ContinueAsync(IntPtr vmPtr)
         {
             await Task.Delay(200);
-            Library.Continue(vmPtr);
         }
-
-        private static void OnChoices(IntPtr vmPtr, Choice[] choices)
+        
+        private static void OnChoices(Story story, Choice[] choices)
         {
             foreach (var choice in choices)
             {
-                Console.WriteLine($"{choice.Content}");
+                Console.WriteLine($">>> {choice.Content}");
             }
 
             var index = new Random(DateTime.Now.Millisecond).Next(0, choices.Length);
             Console.WriteLine($"Choice: {index}");
-            Library.SelectChoice(vmPtr, index);
+            story.SelectChoice(index);
         }
+
 
         [SetUp]
         public void Setup()
@@ -74,30 +69,33 @@ namespace Test
         public void CreateVm()
         {
             var data = File.ReadAllBytes("./test.topib");
-            var vmPtr = Library.InitVm(data, OnDialogue, OnChoices);
-            Library.BindFunctions(vmPtr, new []{typeof(Tests).Assembly});
+            var story = new Story(data, OnDialogue, OnChoices);
+            story.BindFunctions(new[] {typeof(Tests).Assembly});
             var print = new Library.Subscriber(Print);
-            Library.Subscribe(vmPtr, "value", print);
-            var err = new StringBuilder(1028);
-            Library.Run(vmPtr, out var errLine, err, err.Capacity);
-            if (errLine != 0)
+            story.Subscribe( "value", print);
+            try
             {
-                Console.WriteLine($"Error line {errLine}: {err}");
-                Library.DestroyVm(vmPtr);
-                return;
+                story.Start();
+                while (story.CanContinue())
+                {
+                    story.Run();
+                }
+            }
+            catch (Exception e)
+            { 
+                Console.WriteLine(e);
             }
 
-            Library.Unsubscribe(vmPtr, "value", print);
-            var list = Library.GetValue(vmPtr, "list");
+            story.Unsubscribe("value", print);
+            var list = story.GetValue("list");
             Console.WriteLine($"{list.tag} = {list}");
-            Library.DestroyValue(ref list);
-            var set = Library.GetValue(vmPtr, "set");
+            story.DestroyValue(ref list);
+            var set = story.GetValue("set");
             Console.WriteLine($"{set.tag} = {set}");
-            Library.DestroyValue(ref set);
-            var map = Library.GetValue(vmPtr, "map");
+            story.DestroyValue(ref set);
+            var map = story.GetValue("map");
             Console.WriteLine($"{map.tag} = {map}");
-            Library.DestroyValue(ref map);
-            Library.DestroyVm(vmPtr);
+            story.DestroyValue(ref map);
         }
     }
 }
