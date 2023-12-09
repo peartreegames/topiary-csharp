@@ -6,7 +6,7 @@ namespace Topiary
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct Choice
     {
-        [MarshalAs(UnmanagedType.LPStr)] public readonly string Content;
+        [MarshalAs(UnmanagedType.LPUTF8Str)] public readonly string Content;
         [MarshalAs(UnmanagedType.U4)] public readonly int Count;
         [MarshalAs(UnmanagedType.U4)] internal readonly int Ip;
 
