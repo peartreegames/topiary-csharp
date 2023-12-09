@@ -7,17 +7,15 @@ using System.Text.RegularExpressions;
 
 namespace Topiary
 {
-    public class Story
+    public class Story : IDisposable
     {
-        private readonly IntPtr _vmPtr;
+        private IntPtr _vmPtr;
         private readonly StringBuilder _errMsg;
         private readonly OnDialogueCallback _onDialogue;
         private readonly OnChoicesCallback _onChoices;
-
         public delegate void OnDialogueCallback(Story story, Dialogue dialogue);
 
         public delegate void OnChoicesCallback(Story story, Choice[] choices);
-
 
         public Story(byte[] source, OnDialogueCallback onDialogue, OnChoicesCallback onChoices)
         {
@@ -27,9 +25,11 @@ namespace Topiary
             _errMsg = new StringBuilder(2048);
         }
 
-        ~Story()
+        public void Dispose()
         {
+            if (_vmPtr == IntPtr.Zero) return;
             Library.destroyVm(_vmPtr);
+            _vmPtr = IntPtr.Zero;
         }
 
         private void OnDialogue(IntPtr vmPtr, Dialogue dialogue)

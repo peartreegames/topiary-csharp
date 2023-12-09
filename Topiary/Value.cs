@@ -79,7 +79,7 @@ namespace Topiary
             : throw new InvalidOperationException($"Value {tag} cannot be used as float");
 
         public string? String => tag == Tag.String
-            ? Marshal.PtrToStringAnsi(data.stringValue)
+            ? Marshal.PtrToStringUTF8(data.stringValue)
             : throw new InvalidOperationException($"Value {tag} cannot be used as string");
 
         public TopiValue[] List => tag == Tag.List
@@ -99,7 +99,7 @@ namespace Topiary
         {
             Tag.Bool => data.boolValue == 1,
             Tag.Number => data.numberValue,
-            Tag.String => Marshal.PtrToStringAnsi(data.stringValue),
+            Tag.String => Marshal.PtrToStringUTF8(data.stringValue),
             Tag.List => data.listValue.List,
             Tag.Set => data.listValue.Set,
             Tag.Map => data.listValue.Map,
@@ -113,7 +113,7 @@ namespace Topiary
             {
                 Tag.Bool => data.boolValue == 1 ? "True" : "False",
                 Tag.Number => data.numberValue.ToString(CultureInfo.CurrentCulture),
-                Tag.String => Marshal.PtrToStringAnsi(data.stringValue),
+                Tag.String => Marshal.PtrToStringUTF8(data.stringValue),
                 Tag.List => $"[{string.Join(", ", data.listValue.List)}]",
                 Tag.Set => $"{{{string.Join(", ", data.listValue.Set)}}}",
                 Tag.Map => $"{{{string.Join(", ", data.listValue.Map)}}}",
