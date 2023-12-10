@@ -7,7 +7,7 @@
         <AssemblyName>Topiary</AssemblyName>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>topiary</PackageId>
-        <Version>0.4.0</Version>
+        <Version>0.5.0</Version>
         <Title>Topiary Bindings</Title>
         <Authors>Peartree Games</Authors>
         <Description>C# Bindings for Topiary, a narrative scripting language</Description>
@@ -32,7 +32,7 @@
         <DefineConstants>OS_MAC</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
-        <None Update="topi.dylib">
+        <None Update="libtopi.dylib">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
         <None Update="topi.dll">
