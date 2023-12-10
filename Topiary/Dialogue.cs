@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using IntPtr = System.IntPtr;
 
 namespace Topiary
 {

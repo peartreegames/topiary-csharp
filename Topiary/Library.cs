@@ -1,108 +1,135 @@
-﻿using System;
+using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace Topiary
 {
-    public static class Library
+    public class Library : IDisposable
     {
+        private static IntPtr _libPtr;
+        private static int _count;
+        private static readonly object Lock = new object();
+#if OS_MAC
+        private static readonly ILoader Loader = new MacLoader(); 
+#elif OS_WINDOWS
+        private static readonly ILoader Loader = new WindowsLoader(); 
+#endif
+
+        public Library()
+        {
+            if (!File.Exists(Loader.DllPath)) throw new Exception($"DllPath not found at {Loader.DllPath}");
+            lock (Lock)
+            {
+                _libPtr = Loader.Load();
+                if (_libPtr == IntPtr.Zero) throw new System.ComponentModel.Win32Exception();
+                Interlocked.Increment(ref _count);
+            }
+
+            CreateVm = CreateDelegate<CreateVmDelegate>("createVm");
+            DestroyVm = CreateDelegate<DestroyVmDelegate>("destroyVm");
+            Start = CreateDelegate<StartDelegate>("start");
+            Compile = CreateDelegate<CompileDelegate>("compile");
+            Run = CreateDelegate<RunDelegate>("run");
+            SelectContinue = CreateDelegate<SelectContinueDelegate>("selectContinue");
+            CanContinue = CreateDelegate<CanContinueDelegate>("canContinue");
+            IsWaiting = CreateDelegate<IsWaitingDelegate>("isWaiting");
+            SelectChoice = CreateDelegate<SelectChoiceDelegate>("selectChoice");
+            TryGetValue = CreateDelegate<TryGetValueDelegate>("tryGetValue");
+            DestroyValue = CreateDelegate<DestroyValueDelegate>("destroyValue");
+            Subscribe = CreateDelegate<SubscribeDelegate>("subscribe");
+            Unsubscribe = CreateDelegate<UnsubscribeDelegate>("unsubscribe");
+            SetExternNumber = CreateDelegate<SetExternNumberDelegate>("setExternNumber");
+            SetExternString = CreateDelegate<SetExternStringDelegate>("setExternString");
+            SetExternBool = CreateDelegate<SetExternBoolDelegate>("setExternBool");
+            SetExternNil = CreateDelegate<SetExternNilDelegate>("setExternNil");
+            SetExternFunc = CreateDelegate<SetExternFuncDelegate>("setExternFunc");
+        }
+
+        private static T CreateDelegate<T>(string name) where T : Delegate
+        {
+            var procAddr = Loader.GetProc(_libPtr, name);
+            if (procAddr == IntPtr.Zero) throw new Exception($"Could not find {name} proc");
+            return (T)Marshal.GetDelegateForFunctionPointer(procAddr, typeof(T));
+        }
+
+        public readonly CreateVmDelegate CreateVm;
+
+        public readonly DestroyVmDelegate DestroyVm;
+        public readonly StartDelegate Start;
+        public readonly CompileDelegate Compile;
+        public readonly RunDelegate Run;
+        public readonly SelectContinueDelegate SelectContinue;
+        public readonly CanContinueDelegate CanContinue;
+        public readonly IsWaitingDelegate IsWaiting;
+        public readonly SelectChoiceDelegate SelectChoice;
+        public readonly TryGetValueDelegate TryGetValue;
+        public readonly DestroyValueDelegate DestroyValue;
+        public readonly SubscribeDelegate Subscribe;
+        public readonly UnsubscribeDelegate Unsubscribe;
+        public readonly SetExternNumberDelegate SetExternNumber;
+        public readonly SetExternStringDelegate SetExternString;
+        public readonly SetExternBoolDelegate SetExternBool;
+        public readonly SetExternNilDelegate SetExternNil;
+        public readonly SetExternFuncDelegate SetExternFunc;
+
+        public void Dispose()
+        {
+            lock (Lock)
+            {
+                Interlocked.Decrement(ref _count);
+                if (_count > 0) return;
+                Loader.Free(_libPtr);
+                _libPtr = IntPtr.Zero;
+            }
+        }
+
         public delegate void OnDialogueDelegate(IntPtr vmPtr, Dialogue dialogue);
-        
+
         public delegate void OnChoicesDelegate(IntPtr vmPtr, IntPtr choicePtr, byte length);
 
         public delegate TopiValue ExternFunctionDelegate(IntPtr argPtr, byte length);
 
         public delegate void Subscriber(ref TopiValue value);
 
-        /// <summary>
-        /// Create a VM instance
-        /// </summary>
-        /// <param name="source">Compiled source file "topib"</param>
-        /// <param name="onDialogue">Static callback function to be called when a Dialogue line is reached</param>
-        /// <param name="onChoices">Static callback function to be called when a Fork is reached</param>
-        /// <returns>Pointer to the VM, store this to be used when calling functions from Library</returns>
-        public static IntPtr InitVm(byte[] source, OnDialogueDelegate onDialogue, OnChoicesDelegate onChoices)
-        {
-            var dialoguePtr = Marshal.GetFunctionPointerForDelegate(onDialogue);
-            var choicesPtr = Marshal.GetFunctionPointerForDelegate(onChoices);
-            var ptr = createVm(source, source.Length, dialoguePtr, choicesPtr);
-            return ptr;
-        }
-        
-        /// <summary>
-        /// Compile a ".topi" file into bytes.
-        /// Should be saved to a ".topib" file
-        /// </summary>
-        /// <param name="source">The file contents</param>
-        /// <returns>Compiled bytes</returns>
-        public static byte[] Compile(string source)
-        {
-            var bytes = Encoding.UTF8.GetBytes(source);
-            var output = new byte[bytes.Length * 10];
-            compile(bytes, bytes.Length, output, output.Length);
-            return output;
-        }
-        
-#if OS_MAC
-        private const string DllPath = "topi.dylib";
-#elif OS_WINDOWS
-        private const string DllPath = "topi.dll";
-#endif
+        public delegate IntPtr CreateVmDelegate(byte[] source, int sourceLength, IntPtr onDialoguePtr,
+            IntPtr onChoicesPtr);
 
-        [DllImport(DllPath)]
-        private static extern IntPtr createVm(byte[] source, int sourceLength, IntPtr onDialoguePtr, IntPtr onChoicesPtr);
+        public delegate void DestroyVmDelegate(IntPtr vmPtr);
 
-        [DllImport(DllPath)]
-        internal static extern void destroyVm(IntPtr vmPtr);
+        public delegate void StartDelegate(IntPtr vmPtr);
 
-        [DllImport(DllPath)]
-        internal static extern void start(IntPtr vmPtr);
+        public delegate void CompileDelegate(byte[] source, int sourceLength, byte[] output, int capacity);
 
-        [DllImport(DllPath)]
-        private static extern void compile(byte[] source, int sourceLength, byte[] output, int capacity);
+        public delegate void RunDelegate(IntPtr vmPtr, out int errLine, StringBuilder errMsg, int capacity);
 
-        [DllImport(DllPath)]
-        internal static extern void run(IntPtr vmPtr, out int errLine, StringBuilder errMsg, int capacity);
+        public delegate void SelectContinueDelegate(IntPtr vmPtr);
 
-        [DllImport(DllPath)]
-        internal static extern void selectContinue(IntPtr vmPtr);
+        public delegate bool CanContinueDelegate(IntPtr vmPtr);
 
-        [DllImport(DllPath)]
-        internal static extern bool canContinue(IntPtr vmPtr);
+        public delegate bool IsWaitingDelegate(IntPtr vmPtr);
 
-        [DllImport(DllPath)]
-        internal static extern bool isWaiting(IntPtr vmPtr);
+        public delegate void SelectChoiceDelegate(IntPtr vmPtr, int index);
 
-        [DllImport(DllPath)]
-        internal static extern void selectChoice(IntPtr vmPtr, int index);
+        public delegate bool TryGetValueDelegate(IntPtr vmPtr, string name, int nameLength, out TopiValue value);
 
-        [DllImport(DllPath)]
-        internal static extern bool tryGetValue(IntPtr vmPtr, string name, int nameLength, out TopiValue value);
+        public delegate bool DestroyValueDelegate(ref TopiValue value);
 
-        // TODO: Need to remove cross code memory management
-        [DllImport(DllPath)]
-        internal static extern bool destroyValue(ref TopiValue value);
+        public delegate void SubscribeDelegate(IntPtr vmPtr, string name, int nameLength, IntPtr callbackPtr);
 
-        [DllImport(DllPath)]
-        internal static extern void subscribe(IntPtr vmPtr, string name, int nameLength, IntPtr callbackPtr);
+        public delegate void UnsubscribeDelegate(IntPtr vmPtr, string name, int nameLength, IntPtr callbackPtr);
 
-        [DllImport(DllPath)]
-        internal static extern void unsubscribe(IntPtr vmPtr, string name, int nameLength, IntPtr callbackPtr);
+        public delegate void SetExternNumberDelegate(IntPtr vmPtr, string name, int nameLength, float value);
 
-        [DllImport(DllPath)]
-        internal static extern void setExternNumber(IntPtr vmPtr, string name, int nameLength, float value);
-
-        [DllImport(DllPath)]
-        internal static extern void setExternString(IntPtr vmPtr, string name, int nameLength, string value,
+        public delegate void SetExternStringDelegate(IntPtr vmPtr, string name, int nameLength, string value,
             int valueLength);
 
-        [DllImport(DllPath)]
-        public static extern void setExternBool(IntPtr vmPtr, string name, int nameLength, bool value);
+        public delegate void SetExternBoolDelegate(IntPtr vmPtr, string name, int nameLength, bool value);
 
-        [DllImport(DllPath)]
-        internal static extern void setExternNil(IntPtr vmPtr, string name, int nameLength);
+        public delegate void SetExternNilDelegate(IntPtr vmPtr, string name, int nameLength);
 
-        [DllImport(DllPath)]
-        internal static extern void setExternFunc(IntPtr vmPtr, string name, int nameLength, IntPtr funcPtr, byte arity);
+        public delegate void SetExternFuncDelegate(IntPtr vmPtr, string name, int nameLength, IntPtr funcPtr,
+            byte arity);
     }
 }

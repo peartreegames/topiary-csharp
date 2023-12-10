@@ -43,7 +43,7 @@ namespace Test
         public void Compile()
         {
             var text = File.ReadAllText("./test.topi");
-            var compiled = Library.Compile(text);
+            var compiled = Story.Compile(text);
             File.WriteAllBytes("./test.topib", compiled);
             Assert.That(Path.Exists("./test.topib"), Is.True);
         }
@@ -59,7 +59,7 @@ namespace Test
         }
 
         [Topi("sqr")]
-        public static TopiValue Sqr(TopiValue value)
+        private static TopiValue Sqr(TopiValue value)
         {
             var i = value.Int;
             return new TopiValue(i * i);
