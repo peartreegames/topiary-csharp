@@ -43,6 +43,7 @@ namespace Test
         public void Compile()
         {
             var text = File.ReadAllText("./test.topi");
+            Story.DllPath = Library.Loader.DefaultDllPath; 
             var compiled = Story.Compile(text);
             File.WriteAllBytes("./test.topib", compiled);
             Assert.That(Path.Exists("./test.topib"), Is.True);
@@ -69,7 +70,7 @@ namespace Test
         public void CreateVm()
         {
             var data = File.ReadAllBytes("./test.topib");
-            var story = new Story(data, OnDialogue, OnChoices);
+            var story = new Story(data, OnDialogue, OnChoices, Console.WriteLine);
             story.BindFunctions(new[] {typeof(Tests).Assembly});
             var print = new Library.Subscriber(Print);
             story.Subscribe( "value", print);

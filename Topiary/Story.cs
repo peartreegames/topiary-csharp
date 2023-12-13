@@ -14,19 +14,27 @@ namespace Topiary
         private readonly StringBuilder _errMsg;
         private readonly OnDialogueCallback _onDialogue;
         private readonly OnChoicesCallback _onChoices;
+        private readonly OutputCallback _output;
+        public static string? DllPath { get; set; }
         public delegate void OnDialogueCallback(Story story, Dialogue dialogue);
         public delegate void OnChoicesCallback(Story story, Choice[] choices);
 
-        public Story(byte[] source, OnDialogueCallback onDialogue, OnChoicesCallback onChoices)
+        public delegate void OutputCallback(string msg);
+
+        public Story(byte[] source, OnDialogueCallback onDialogue, OnChoicesCallback onChoices, OutputCallback output)
         {
-            _library = new Library();
+            if (DllPath == null) throw new Exception("DllPath not set");
+            _library = new Library(DllPath);
             _onDialogue = onDialogue;
             _onChoices = onChoices;
+            _output = output;
             Library.OnChoicesDelegate onChoicesDel = OnChoices; 
-            Library.OnDialogueDelegate onDialogueDel = OnDialogue; 
+            Library.OnDialogueDelegate onDialogueDel = OnDialogue;
+            Library.OutputLogDelegate outputDel = Output;
             var dialoguePtr = Marshal.GetFunctionPointerForDelegate(onDialogueDel);
             var choicesPtr = Marshal.GetFunctionPointerForDelegate(onChoicesDel);
-            _vmPtr = _library.CreateVm(source, source.Length, dialoguePtr, choicesPtr);
+            var outputPtr = Marshal.GetFunctionPointerForDelegate(outputDel);
+            _vmPtr = _library.CreateVm(source, source.Length, dialoguePtr, choicesPtr, outputPtr);
             _errMsg = new StringBuilder(2048);
         }
 
@@ -46,7 +54,8 @@ namespace Topiary
         /// <returns>Compiled bytes</returns>
         public static byte[] Compile(string source)
         {
-            var lib = new Library();
+            if (DllPath == null) throw new Exception("DllPath not set");
+            var lib = new Library(DllPath);
             var bytes = Encoding.UTF8.GetBytes(source);
             var output = new byte[bytes.Length * 10];
             lib.Compile(bytes, bytes.Length, output, output.Length);
@@ -55,6 +64,7 @@ namespace Topiary
 
         private void OnDialogue(IntPtr vmPtr, Dialogue dialogue) => _onDialogue(this, dialogue);
         private void OnChoices(IntPtr vmPtr, IntPtr choicesPtr, byte count) => _onChoices(this, Choice.MarshalPtr(choicesPtr, count));
+        private void Output(IntPtr msgPtr) => _output($"[Topiary] {Marshal.PtrToStringUTF8(msgPtr)}");
 
         /// <summary>
         /// Start the Story
