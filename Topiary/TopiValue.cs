@@ -11,7 +11,7 @@ namespace PeartreeGames.Topiary
     /// or check tag if unknown
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct TopiValue : IDisposable
+    public struct TopiValue : IDisposable, IEquatable<TopiValue>
     {
         [MarshalAs(UnmanagedType.U1)] public Tag tag;
         public TopiValueData data;
@@ -124,6 +124,49 @@ namespace PeartreeGames.Topiary
         {
             Library.Global.DestroyValue(ref this);
         }
+
+        public bool Equals(TopiValue other)
+        {
+            if (tag != other.tag) return false;
+            switch (tag)
+            {
+                case Tag.Bool:
+                    return data.boolValue == other.data.boolValue;
+                case Tag.Number:
+                    return Math.Abs(data.numberValue - other.data.numberValue) < 0.0001f;
+                case Tag.String:
+                    return data.stringValue == other.data.stringValue;
+                case Tag.List:
+                case Tag.Set:
+                case Tag.Map:
+                    return data.listValue.Equals(other.data.listValue);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public override bool Equals(object? obj) => obj is TopiValue other && Equals(other);
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((int) tag * 397) ^ tag switch
+                {
+                    Tag.Nil => 0,
+                    Tag.Bool => data.boolValue.GetHashCode(),
+                    Tag.Number => data.numberValue.GetHashCode(),
+                    Tag.String => data.stringValue.GetHashCode(),
+                    Tag.List => data.listValue.GetHashCode(),
+                    Tag.Set => data.listValue.GetHashCode(),
+                    Tag.Map => data.listValue.GetHashCode(),
+                    _ => -1
+                };
+            }
+        }
+
+        public static bool operator ==(TopiValue left, TopiValue right) => left.Equals(right);
+        public static bool operator !=(TopiValue left, TopiValue right) => !(left == right);
     }
 
     [StructLayout(LayoutKind.Explicit)]
