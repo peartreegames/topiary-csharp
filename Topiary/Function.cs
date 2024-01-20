@@ -1,69 +1,89 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Topiary
+namespace PeartreeGames.Topiary
 {
-    [StructLayout(LayoutKind.Explicit)]
-    public struct Function
+    public class Function : IDisposable
     {
-        [FieldOffset(0)] private Func<TopiValue> _func;
-        [FieldOffset(0)] private Func<TopiValue, TopiValue> _func1;
-        [FieldOffset(0)] private Func<TopiValue, TopiValue, TopiValue> _func2;
-        [FieldOffset(0)] private Func<TopiValue, TopiValue, TopiValue, TopiValue> _func3;
-        [FieldOffset(0)] private Func<TopiValue, TopiValue, TopiValue, TopiValue, TopiValue> _func4;
+        private readonly Delegate _delegate;
+        private GCHandle _handle;
 
-        [FieldOffset(0)] private Action _action;
-        [FieldOffset(0)] private Action<TopiValue> _action1;
-        [FieldOffset(0)] private Action<TopiValue, TopiValue> _action2;
-        [FieldOffset(0)] private Action<TopiValue, TopiValue, TopiValue> _action3;
-        [FieldOffset(0)] private Action<TopiValue, TopiValue, TopiValue, TopiValue> _action4;
+        public Function(Delegate del)
+        {
+            _delegate = del;
+            if (Library.IsUnityRuntime) _handle = GCHandle.Alloc(_delegate, GCHandleType.Pinned);
+        }
 
-        [FieldOffset(32)] private bool _hasReturn;
+        public void Dispose()
+        {
+            if (_handle.IsAllocated) _handle.Free();
+        }
 
-        public static Function Create(Func<TopiValue> func) =>
-            new Function {_func = func, _hasReturn = true};
+        public delegate TopiValue FuncDel();
 
-        public static Function Create(Func<TopiValue, TopiValue> func) =>
-            new Function {_func1 = func, _hasReturn = true};
+        public delegate TopiValue FuncDel1(TopiValue value1);
 
-        public static Function Create(Func<TopiValue, TopiValue, TopiValue> func) =>
-            new Function {_func2 = func, _hasReturn = true};
+        public delegate TopiValue FuncDel2(TopiValue value1, TopiValue value2);
 
-        public static Function Create(Func<TopiValue, TopiValue, TopiValue, TopiValue> func) =>
-            new Function {_func3 = func, _hasReturn = true};
+        public delegate TopiValue FuncDel3(TopiValue value1, TopiValue value2, TopiValue value3);
 
-        public static Function Create(Func<TopiValue, TopiValue, TopiValue, TopiValue, TopiValue> func) =>
-            new Function {_func4 = func, _hasReturn = true};
+        public delegate TopiValue FuncDel4(TopiValue value1, TopiValue value2, TopiValue value3,
+            TopiValue value4);
 
-        public static Function Create(Action action) => new Function {_action = action};
+        public delegate void ActionDel();
 
-        public static Function Create(Action<TopiValue> action) =>
-            new Function {_action1 = action};
+        public delegate void ActionDel1(TopiValue value1);
 
-        public static Function Create(Action<TopiValue, TopiValue> action) =>
-            new Function {_action2 = action};
+        public delegate void ActionDel2(TopiValue value1, TopiValue value2);
 
-        public static Function Create(Action<TopiValue, TopiValue, TopiValue> action) =>
-            new Function {_action3 = action};
+        public delegate void ActionDel3(TopiValue value1, TopiValue value2, TopiValue value3);
 
-        public static Function Create(Action<TopiValue, TopiValue, TopiValue, TopiValue> action) =>
-            new Function {_action4 = action};
+        public delegate void ActionDel4(TopiValue value1, TopiValue value2, TopiValue value3,
+            TopiValue value4);
+
+
+        public override string ToString() => $"Function {_delegate.Method.Name}";
 
         public TopiValue Call(IntPtr argPtr, byte count)
         {
             var args = CreateArgs(argPtr, count);
-            if (_hasReturn) return FuncCall(args);
-            ActionCall(args);
-            return default;
+            switch (_delegate)
+            {
+                case ActionDel a:
+                    a();
+                    return default;
+                case ActionDel1 a1:
+                    a1(args[0]);
+                    return default;
+                case ActionDel2 a2:
+                    a2(args[0], args[1]);
+                    return default;
+                case ActionDel3 a3:
+                    a3(args[0], args[1], args[2]);
+                    return default;
+                case ActionDel4 a4:
+                    a4(args[0], args[1], args[2], args[3]);
+                    return default;
+                case FuncDel a:
+                    return a();
+                case FuncDel1 a1:
+                    return a1(args[0]);
+                case FuncDel2 a2:
+                    return a2(args[0], args[1]);
+                case FuncDel3 a3:
+                    return a3(args[0], args[1], args[2]);
+                case FuncDel4 a4:
+                    return a4(args[0], args[1], args[2], args[3]);
+                default:
+                    throw new Exception($"Unsupported Delegate type {_delegate}");
+            }
         }
 
         private static TopiValue[] CreateArgs(IntPtr argPtr, byte count)
         {
             var args = new TopiValue[count];
             var ptr = argPtr;
-
             for (var i = 0; i < count; i++)
             {
                 args[i] = TopiValue.FromPtr(ptr);
@@ -73,70 +93,21 @@ namespace Topiary
             return args;
         }
 
-        private TopiValue FuncCall(IReadOnlyList<TopiValue> args)
-        {
-            var count = args.Count;
-            return count switch
-            {
-                0 => _func(),
-                1 => _func1(args[0]),
-                2 => _func2(args[0], args[1]),
-                3 => _func3(args[0], args[1], args[2]),
-                4 => _func4(args[0], args[1], args[2], args[3]),
-                _ => throw new ArgumentOutOfRangeException(nameof(count), "The parameter count is unsupported")
-            };
-        }
-
-        private void ActionCall(IReadOnlyList<TopiValue> args)
-        {
-            var count = args.Count;
-            switch (count)
-            {
-                case 0:
-                    _action();
-                    break;
-                case 1:
-                    _action1(args[0]);
-                    break;
-                case 2:
-                    _action2(args[0], args[1]);
-                    break;
-                case 3:
-                    _action3(args[0], args[1], args[2]);
-                    break;
-                case 4:
-                    _action4(args[0], args[1], args[2], args[3]);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(count), "The parameter count is unsupported");
-            }
-        }
-
-        public static Library.ExternFunctionDelegate CreateFromMethodInfo(MethodInfo method)
+        public static Function Create(MethodInfo method)
         {
             var parameters = method.GetParameters();
-            var hasReturn = method.ReturnType == typeof(void);
+            var hasNoReturn = method.ReturnType == typeof(void);
             var delegateType = parameters.Length switch
             {
-                0 => hasReturn ? typeof(Action) : typeof(Func<TopiValue>),
-                1 => hasReturn
-                    ? typeof(Action<TopiValue>)
-                    : typeof(Func<TopiValue, TopiValue>),
-                2 => hasReturn
-                    ? typeof(Action<TopiValue, TopiValue>)
-                    : typeof(Func<TopiValue, TopiValue, TopiValue>),
-                3 => hasReturn
-                    ? typeof(Action<TopiValue, TopiValue, TopiValue>)
-                    : typeof(Func<TopiValue, TopiValue, TopiValue, TopiValue>),
-                4 => hasReturn
-                    ? typeof(Action<TopiValue, TopiValue, TopiValue, TopiValue>)
-                    : typeof(Func<TopiValue, TopiValue, TopiValue, TopiValue, TopiValue>),
+                0 => hasNoReturn ? typeof(ActionDel) : typeof(FuncDel),
+                1 => hasNoReturn ? typeof(ActionDel1) : typeof(FuncDel1),
+                2 => hasNoReturn ? typeof(ActionDel2) : typeof(FuncDel2),
+                3 => hasNoReturn ? typeof(ActionDel3) : typeof(FuncDel3),
+                4 => hasNoReturn ? typeof(ActionDel4) : typeof(FuncDel4),
                 _ => throw new NotSupportedException("Unsupported number of parameters")
             };
-
-            var myDelegate = Delegate.CreateDelegate(delegateType, method);
-
-            return ((Function) Create((dynamic) myDelegate)).Call;
+            dynamic del = method.CreateDelegate(delegateType);
+            return new Function(del);
         }
     }
 }
