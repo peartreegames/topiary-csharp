@@ -3,7 +3,7 @@
     <PropertyGroup>
         <RootNamespace>PeartreeGames.Topiary</RootNamespace>
         <Nullable>enable</Nullable>
-        <AssemblyName>Topiary</AssemblyName>
+        <AssemblyName>Topiary.CSharp</AssemblyName>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>topiary</PackageId>
         <Version>0.6.0</Version>
