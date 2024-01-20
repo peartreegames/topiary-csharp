@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
-        <RootNamespace>Topiary</RootNamespace>
+        <RootNamespace>PeartreeGames.Topiary</RootNamespace>
         <Nullable>enable</Nullable>
         <AssemblyName>Topiary</AssemblyName>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>topiary</PackageId>
-        <Version>0.5.0</Version>
+        <Version>0.5.1</Version>
         <Title>Topiary Bindings</Title>
         <Authors>Peartree Games</Authors>
         <Description>C# Bindings for Topiary, a narrative scripting language</Description>
@@ -17,6 +16,8 @@
         <Company>Peartree Games</Company>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <LangVersion>8</LangVersion>
+        <TargetFrameworks>net471;netstandard2.1</TargetFrameworks>
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
@@ -32,22 +33,17 @@
         <DefineConstants>OS_MAC</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
-        <None Update="libtopi.dylib">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="topi.dll">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="topi.pdb">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="../README.md" Pack="true" PackagePath="\"/>
+        <None Include="../README.md" Pack="true" PackagePath=""/>
         <None Include="../LICENSE" Pack="true" PackagePath=""/>
+        <EmbeddedResource Include="..\libtopi.dylib" />
+        <EmbeddedResource Include="..\topi.dll" />
+        <EmbeddedResource Include="..\topi.lib" />
+        <EmbeddedResource Include="..\topi.pdb" />
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+        <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
     </ItemGroup>
-
+    <ItemGroup>
+      <Folder Include="obj\" />
+    </ItemGroup>
 </Project>

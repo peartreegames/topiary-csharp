@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 
-namespace Topiary
+namespace PeartreeGames.Topiary
 {
     /// <summary>
     /// Topiary Value container
@@ -11,7 +11,7 @@ namespace Topiary
     /// or check tag if unknown
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct TopiValue
+    public struct TopiValue : IDisposable
     {
         [MarshalAs(UnmanagedType.U1)] public Tag tag;
         public TopiValueData data;
@@ -78,8 +78,8 @@ namespace Topiary
             ? data.numberValue
             : throw new InvalidOperationException($"Value {tag} cannot be used as float");
 
-        public string? String => tag == Tag.String
-            ? Marshal.PtrToStringUTF8(data.stringValue)
+        public string String => tag == Tag.String
+            ? Library.PtrToUtf8String(data.stringValue)
             : throw new InvalidOperationException($"Value {tag} cannot be used as string");
 
         public TopiValue[] List => tag == Tag.List
@@ -99,7 +99,7 @@ namespace Topiary
         {
             Tag.Bool => data.boolValue == 1,
             Tag.Number => data.numberValue,
-            Tag.String => Marshal.PtrToStringUTF8(data.stringValue),
+            Tag.String => Library.PtrToUtf8String(data.stringValue),
             Tag.List => data.listValue.List,
             Tag.Set => data.listValue.Set,
             Tag.Map => data.listValue.Map,
@@ -113,12 +113,17 @@ namespace Topiary
             {
                 Tag.Bool => data.boolValue == 1 ? "True" : "False",
                 Tag.Number => data.numberValue.ToString(CultureInfo.CurrentCulture),
-                Tag.String => Marshal.PtrToStringUTF8(data.stringValue),
+                Tag.String => Library.PtrToUtf8String(data.stringValue),
                 Tag.List => $"[{string.Join(", ", data.listValue.List)}]",
                 Tag.Set => $"{{{string.Join(", ", data.listValue.Set)}}}",
                 Tag.Map => $"{{{string.Join(", ", data.listValue.Map)}}}",
                 _ => $"{tag}: null"
             } ?? throw new InvalidOperationException();
+
+        public void Dispose()
+        {
+            Library.Global.DestroyValue(ref this);
+        }
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -162,7 +167,7 @@ namespace Topiary
         {
             get
             {
-                var set = new HashSet<TopiValue>(count);
+                var set = new HashSet<TopiValue>();
                 var ptr = listPtr;
                 for (var i = 0; i < count; i++)
                 {

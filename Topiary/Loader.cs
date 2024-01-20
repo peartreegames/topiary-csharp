@@ -1,50 +1,75 @@
 using System;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
-namespace Topiary
+namespace PeartreeGames.Topiary
 {
     public interface ILoader
     {
-        string DefaultDllPath { get; }
-        IntPtr Load(string dllPath);
-        void Free(IntPtr ptr);
-        IntPtr GetProc(IntPtr ptr, string name);
+        SafeHandle Load();
+        bool Free(IntPtr ptr);
+        IntPtr GetProc(string name);
     }
 
-    public class WindowsLoader : ILoader
+    public static class EmbeddedLoader
     {
-        public string DefaultDllPath => "topi.dll";
+        public static string CreateEmbeddedResource(string dllName)
+        {
+            var asm = Assembly.GetExecutingAssembly();
+            var resName = "PeartreeGames.Topiary." + dllName;
 
-        [DllImport("Kernel32.dll", SetLastError = true)]
+            using var stream = asm.GetManifestResourceStream(resName);
+            if (stream == null) throw new DllNotFoundException($"Could not find {resName}");
+            var bytes = new byte[stream.Length];
+            _ = stream.Read(bytes, 0, bytes.Length);
+
+            var tempFilePath = Path.GetTempFileName();
+            File.WriteAllBytes(tempFilePath, bytes);
+            return tempFilePath;
+        }
+    }
+
+    public class WindowsLoader : SafeHandleZeroOrMinusOneIsInvalid, ILoader
+    {
+        [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibrary(string path);
 
-        [DllImport("Kernel32.dll", SetLastError = true)]
-        private static extern void FreeLibrary(IntPtr ptr);
+        [DllImport("kernel32", SetLastError = true)]
+        private static extern bool FreeLibrary(IntPtr ptr);
 
-        [DllImport("Kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32", SetLastError = true)]
         private static extern IntPtr GetProcAddress(IntPtr ptr, string name);
 
-        public IntPtr Load(string dllPath)
+        public SafeHandle Load()
         {
-            var ptr = LoadLibrary(dllPath);
+            var ptr = LoadLibrary(EmbeddedLoader.CreateEmbeddedResource("topi.dll"));
+            handle = ptr;
+            if (ptr != IntPtr.Zero) return this;
+            var errPtr = Marshal.GetLastWin32Error();
+            throw new System.ComponentModel.Win32Exception(errPtr);
+        }
+
+        public bool Free(IntPtr ptr) => FreeLibrary(ptr);
+
+        public IntPtr GetProc(string name)
+        {
+            var ptr = GetProcAddress(handle, name);
             if (ptr != IntPtr.Zero) return ptr;
             var errPtr = Marshal.GetLastWin32Error();
             throw new System.ComponentModel.Win32Exception(errPtr);
         }
 
-        public void Free(IntPtr ptr) => FreeLibrary(ptr);
-        public IntPtr GetProc(IntPtr libPtr, string name)
+        public WindowsLoader(bool ownsHandle) : base(ownsHandle)
         {
-            var ptr = GetProcAddress(libPtr, name);
-            if (ptr != IntPtr.Zero) return ptr;
-            var errPtr = Marshal.GetLastWin32Error();
-            throw new System.ComponentModel.Win32Exception(errPtr);
         }
+
+        protected override bool ReleaseHandle() => Free(handle);
     }
 
-    public class MacLoader : ILoader
+    public class MacLoader : SafeHandleZeroOrMinusOneIsInvalid, ILoader
     {
-        public string DefaultDllPath => "libtopi.dylib";
         private const int RtldNow = 2;
 
         [DllImport("libdl.dylib")]
@@ -59,16 +84,23 @@ namespace Topiary
         [DllImport("libdl.dylib")]
         private static extern IntPtr dlerror();
 
-        public IntPtr Load(string dllPath)
+        public SafeHandle Load()
         {
-            var ptr = dlopen(dllPath, RtldNow);
-            if (ptr != IntPtr.Zero) return ptr;
+            var ptr = dlopen(EmbeddedLoader.CreateEmbeddedResource("libtopi.dylib"), RtldNow);
+            handle = ptr;
+            if (ptr != IntPtr.Zero) return this;
             var errPtr = dlerror();
-            throw new System.ComponentModel.Win32Exception(Marshal.PtrToStringAnsi(errPtr));
+            throw new System.ComponentModel.Win32Exception(Library.PtrToUtf8String(errPtr));
         }
 
-        public void Free(IntPtr ptr) => dlclose(ptr);
+        public bool Free(IntPtr ptr) => dlclose(ptr);
 
-        public IntPtr GetProc(IntPtr ptr, string name) => dlsym(ptr, name);
+        public IntPtr GetProc(string name) => dlsym(handle, name);
+
+        public MacLoader(bool ownsHandle) : base(ownsHandle)
+        {
+        }
+
+        protected override bool ReleaseHandle() => Free(handle);
     }
 }
