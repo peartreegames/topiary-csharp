@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Topiary
+namespace PeartreeGames.Topiary
 {
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct Choice

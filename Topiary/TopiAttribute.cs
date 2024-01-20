@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Topiary
+namespace PeartreeGames.Topiary
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class TopiAttribute : Attribute

@@ -1,12 +1,8 @@
-// #define ASYNC
-
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using NUnit.Framework;
-using Topiary;
 
-namespace Test
+namespace PeartreeGames.Topiary.Test
 {
     public class Tests
     {
@@ -14,11 +10,6 @@ namespace Test
         {
             Console.WriteLine($":{dialogue.Speaker}: {dialogue.Content} {string.Join('#', dialogue.Tags)}");
             story.Continue();
-        }
-
-        private static async void ContinueAsync(IntPtr vmPtr)
-        {
-            await Task.Delay(200);
         }
         
         private static void OnChoices(Story story, Choice[] choices)
@@ -40,10 +31,16 @@ namespace Test
         }
 
         [Test]
-        public void Compile()
+        public void CompileAndRun()
+        {
+            Compile();
+            Run();
+        }
+
+
+        private static void Compile()
         {
             var text = File.ReadAllText("./test.topi");
-            Story.DllPath = Library.Loader.DefaultDllPath; 
             var compiled = Story.Compile(text);
             File.WriteAllBytes("./test.topib", compiled);
             Assert.That(Path.Exists("./test.topib"), Is.True);
@@ -52,12 +49,27 @@ namespace Test
         private static void Print(ref TopiValue value) =>
             Console.WriteLine($"PRINT:: {value.tag} = {value.Value}");
 
+        [Topi("strPrint")]
+        private static void StrPrint(TopiValue value)
+        {
+            var str = value.String;
+            Console.WriteLine($"StrPrint:: {str}");
+        }
+
         [Topi("sqrPrint")]
         private static void SqrPrint(TopiValue value)
         {
             var i = value.Int;
             Console.WriteLine($"SqrPrint:: {i * i}");
         }
+        
+
+        [Topi("sumPrint")]
+        private static void SumPrint(TopiValue a, TopiValue b)
+        {
+            Console.WriteLine($"SumPrint:: {a.Float + b.Float}");
+        }
+        
 
         [Topi("sqr")]
         private static TopiValue Sqr(TopiValue value)
@@ -66,18 +78,19 @@ namespace Test
             return new TopiValue(i * i);
         }
 
-        [Test]
-        public void CreateVm()
+        private static void Run()
         {
             var data = File.ReadAllBytes("./test.topib");
-            var story = new Story(data, OnDialogue, OnChoices, Console.WriteLine);
+            var story = new Story(data, OnDialogue, OnChoices, Library.Severity.Info);
+            Library.OnDebugLogMessage += LogMsg;
             story.BindFunctions(new[] {typeof(Tests).Assembly});
             var print = new Library.Subscriber(Print);
             story.Subscribe( "value", print);
+            story.Subscribe("nope", print);
             try
             {
                 story.Start();
-                while (story.CanContinue())
+                while (story.CanContinue)
                 {
                     story.Run();
                 }
@@ -88,15 +101,34 @@ namespace Test
             }
 
             story.Unsubscribe("value", print);
-            var list = story.GetValue("list");
+            using var list = story.GetValue("list");
             Console.WriteLine($"{list.tag} = {list}");
-            story.DestroyValue(ref list);
-            var set = story.GetValue("set");
+            using var set = story.GetValue("set");
             Console.WriteLine($"{set.tag} = {set}");
-            story.DestroyValue(ref set);
-            var map = story.GetValue("map");
+            using var map = story.GetValue("map");
             Console.WriteLine($"{map.tag} = {map}");
-            story.DestroyValue(ref map);
+        }
+
+        private static void LogMsg(string msg, Library.Severity severity)
+        {
+            switch (severity)
+            {
+                case Library.Severity.Debug:
+                case Library.Severity.Info:
+                    Console.WriteLine(msg);
+                    break;
+                case Library.Severity.Warn:
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine(msg);
+                    break;
+                case Library.Severity.Error:
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine(msg);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(severity), severity, null);
+            }
+            Console.ResetColor();
         }
     }
 }

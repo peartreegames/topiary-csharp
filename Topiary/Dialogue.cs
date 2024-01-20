@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using IntPtr = System.IntPtr;
 
-namespace Topiary
+namespace PeartreeGames.Topiary
 {
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct Dialogue
@@ -23,7 +23,7 @@ namespace Topiary
                 for (var i = 0; i < _tagsLen; i++)
                 {
                     var ptr = Marshal.ReadIntPtr(_tagsPtr, offset);
-                    result[i] = Marshal.PtrToStringUTF8(ptr) ?? string.Empty;
+                    result[i] = Library.PtrToUtf8String(ptr);
                     offset += IntPtr.Size;
                 }
 

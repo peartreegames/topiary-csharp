@@ -3,14 +3,19 @@ var list = [1,2,3,4,55]
 var set = {"one", "two"}
 var map = {1: "one", 2: "two"}
 
-// set to sum to ensure externs are being called
-extern var sqrPrint = |x| print(x + x)
-extern var sqr = |x| return x + x
+// set to incorrect calculations to ensure externs are being called
+extern const sqrPrint = |x| print(x + x)
+extern const sumPrint = |a, b| print(a - b)
+extern const strPrint = |str| print(str)
+extern const sqr = |x| return x + x
+extern const test = |t| print("test")
 
 === START {
     :: "A person approaches."
     :Stranger: "Hey there. {sqr(123)}"
     sqrPrint(value)
+    sumPrint(1.23, 1.37)
+    strPrint("TESTING")
     fork^ {
         ~ "Greet them." {
             :Drew: "Oh, uh, nice to meet you. My name is Drew."

@@ -1,51 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Topiary
+namespace PeartreeGames.Topiary
 {
     public class Story : IDisposable
     {
         private readonly Library _library;
         private IntPtr _vmPtr;
-        private readonly StringBuilder _errMsg;
+
         private readonly OnDialogueCallback _onDialogue;
         private readonly OnChoicesCallback _onChoices;
-        private readonly OutputCallback _output;
-        public static string? DllPath { get; set; }
+        private readonly List<Function> _functions;
+        private readonly SortedSet<string> _externs;
+        private GCHandle _onDialogueHandle;
+        private GCHandle _onChoicesHandle;
+
         public delegate void OnDialogueCallback(Story story, Dialogue dialogue);
+
         public delegate void OnChoicesCallback(Story story, Choice[] choices);
 
-        public delegate void OutputCallback(string msg);
+        public Library Library => _library;
 
-        public Story(byte[] source, OnDialogueCallback onDialogue, OnChoicesCallback onChoices, OutputCallback output)
+        public Story(byte[] source, OnDialogueCallback onDialogue, OnChoicesCallback onChoices,
+            Library.Severity severity = Library.Severity.Error)
         {
-            if (DllPath == null) throw new Exception("DllPath not set");
-            _library = new Library(DllPath);
+            _library = new Library();
+            _library.SetDebugSeverity(severity);
+            
+            using var memStream = new MemoryStream(source);
+            using var reader = new BinaryReader(memStream);
+            _externs = ByteCode.GetExterns(reader);
             _onDialogue = onDialogue;
             _onChoices = onChoices;
-            _output = output;
-            Library.OnChoicesDelegate onChoicesDel = OnChoices; 
+            Library.OnChoicesDelegate onChoicesDel = OnChoices;
             Library.OnDialogueDelegate onDialogueDel = OnDialogue;
-            Library.OutputLogDelegate outputDel = Output;
+
+            if (Library.IsUnityRuntime)
+            {
+                _onChoicesHandle = GCHandle.Alloc(onDialogueDel, GCHandleType.Pinned);
+                _onDialogueHandle = GCHandle.Alloc(onChoicesDel, GCHandleType.Pinned);
+            }
+
             var dialoguePtr = Marshal.GetFunctionPointerForDelegate(onDialogueDel);
             var choicesPtr = Marshal.GetFunctionPointerForDelegate(onChoicesDel);
-            var outputPtr = Marshal.GetFunctionPointerForDelegate(outputDel);
-            _vmPtr = _library.CreateVm(source, source.Length, dialoguePtr, choicesPtr, outputPtr);
-            _errMsg = new StringBuilder(2048);
+            _vmPtr = _library.CreateVm(source, source.Length, dialoguePtr, choicesPtr);
+            _functions = new List<Function>();
         }
 
         public void Dispose()
         {
             if (_vmPtr == IntPtr.Zero) return;
             _library.DestroyVm(_vmPtr);
+            _library.Dispose();
+            if (_onDialogueHandle.IsAllocated) _onDialogueHandle.Free();
+            if (_onChoicesHandle.IsAllocated) _onChoicesHandle.Free();
+            foreach (var func in _functions) func.Dispose();
             _vmPtr = IntPtr.Zero;
         }
-        
-        
+
         /// <summary>
         /// Compile a ".topi" file into bytes.
         /// Should be saved to a ".topib" file
@@ -54,17 +71,18 @@ namespace Topiary
         /// <returns>Compiled bytes</returns>
         public static byte[] Compile(string source)
         {
-            if (DllPath == null) throw new Exception("DllPath not set");
-            var lib = new Library(DllPath);
+            var lib = new Library();
             var bytes = Encoding.UTF8.GetBytes(source);
             var output = new byte[bytes.Length * 10];
             lib.Compile(bytes, bytes.Length, output, output.Length);
+            lib.Dispose();
             return output;
         }
 
         private void OnDialogue(IntPtr vmPtr, Dialogue dialogue) => _onDialogue(this, dialogue);
-        private void OnChoices(IntPtr vmPtr, IntPtr choicesPtr, byte count) => _onChoices(this, Choice.MarshalPtr(choicesPtr, count));
-        private void Output(IntPtr msgPtr) => _output($"[Topiary] {Marshal.PtrToStringUTF8(msgPtr)}");
+
+        private void OnChoices(IntPtr vmPtr, IntPtr choicesPtr, byte count) =>
+            _onChoices(this, Choice.MarshalPtr(choicesPtr, count));
 
         /// <summary>
         /// Start the Story
@@ -75,27 +93,21 @@ namespace Topiary
         /// Run the Story until the next Dialogue or Choice
         /// </summary>
         /// <exception cref="Exception"></exception>
-        public void Run()
-        {
-            _library.Run(_vmPtr, out var errLine, _errMsg, _errMsg.Capacity);
-            if (errLine != 0) throw new Exception($"Topiary Error line {errLine}: {_errMsg}");
-        }
+        public void Run() => _library.Run(_vmPtr);
 
         /// <summary>
         /// Continue the Story.
         /// </summary>
         public void Continue() => _library.SelectContinue(_vmPtr);
 
-        public bool CanContinue() => _library.CanContinue(_vmPtr);
-
-        public bool IsWaiting() => _library.IsWaiting(_vmPtr);
+        public bool CanContinue => _library.CanContinue(_vmPtr);
+        public bool IsWaiting => _library.IsWaiting(_vmPtr);
 
         /// <summary>
         /// Select a Choice.
         /// </summary>
         /// <param name="index">The index of the choice selected</param>
         public void SelectChoice(int index) => _library.SelectChoice(_vmPtr, index);
-
 
         /// <summary>
         /// Retrieve the current value of any Global variable in the story
@@ -121,31 +133,34 @@ namespace Topiary
         /// </summary>
         /// <param name="name">The name of the variable</param>
         /// <param name="callback">The callback to be executed on change</param>
-        public void Subscribe(string name, Library.Subscriber callback) => _library.Subscribe(_vmPtr, name,
-            name.Length, Marshal.GetFunctionPointerForDelegate(callback));
+        public bool Subscribe(string name, Library.Subscriber callback) =>
+            _library.Subscribe(_vmPtr, name, name.Length,
+                Marshal.GetFunctionPointerForDelegate(callback));
 
         /// <summary>
         /// Unsubscribe when a Global variable changes
         /// </summary>
         /// <param name="name">The name of the variable</param>
         /// <param name="callback">The callback that was passed into Subscribe</param>
-        public void Unsubscribe(string name, Library.Subscriber callback) => _library.Unsubscribe(_vmPtr,
-            name,
-            name.Length, Marshal.GetFunctionPointerForDelegate(callback));
+        public bool Unsubscribe(string name, Library.Subscriber callback) =>
+            _library.Unsubscribe(_vmPtr, name, name.Length,
+                Marshal.GetFunctionPointerForDelegate(callback));
 
         /// <summary>
         /// Set an Extern variable to a bool value
         /// </summary>
         /// <param name="name">The name of the variable</param>
         /// <param name="value">The value to set</param>
-        public void Set(string name, bool value) => _library.SetExternBool(_vmPtr, name, name.Length, value);
+        public void Set(string name, bool value) =>
+            _library.SetExternBool(_vmPtr, name, name.Length, value);
 
         /// <summary>
         /// Set an Extern variable to a float value
         /// </summary>
         /// <param name="name">The name of the variable</param>
         /// <param name="value">The value to set</param>
-        public void Set(string name, float value) => _library.SetExternNumber(_vmPtr, name, name.Length, value);
+        public void Set(string name, float value) =>
+            _library.SetExternNumber(_vmPtr, name, name.Length, value);
 
         /// <summary>
         /// Set an Extern variable to a float value
@@ -163,8 +178,11 @@ namespace Topiary
         /// <param name="name">The name of the variable</param>
         /// <param name="function">The value to set</param>
         /// <param name="arity">The number of parameters the function accepts</param>
-        public void Set(string name, Library.ExternFunctionDelegate function, byte arity) =>
-            _library.SetExternFunc(_vmPtr, name, name.Length, Marshal.GetFunctionPointerForDelegate(function), arity);
+        public void Set(string name, Library.ExternFunctionDelegate function, byte arity)
+        {
+            var ptr = Marshal.GetFunctionPointerForDelegate(function);
+            _library.SetExternFunc(_vmPtr, name, name.Length, ptr, arity);
+        }
 
         /// <summary>
         /// Set an Extern variable to a nil value
@@ -183,16 +201,23 @@ namespace Topiary
         {
             foreach (var assembly in assemblies)
             {
-                if (Regex.IsMatch(assembly.FullName, "^(System|Microsoft|mscorlib|netstandard|Windows|JetBrains|test)"))
+                if (Regex.IsMatch(assembly.FullName,
+                        "^(System|Microsoft|mscorlib|netstandard|Windows|JetBrains|test)"))
                     continue;
                 foreach (var type in assembly.DefinedTypes)
                 {
-                    foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static |
+                    foreach (var method in type.GetMethods(BindingFlags.Public |
+                                                           BindingFlags.Static |
                                                            BindingFlags.NonPublic))
                     {
-                        if (!(method.GetCustomAttribute(typeof(TopiAttribute), false) is TopiAttribute attr)) continue;
-                        var del = Function.CreateFromMethodInfo(method);
-                        Set(attr.Name, del, (byte) method.GetParameters().Length);
+                        if (!(method.GetCustomAttribute(typeof(TopiAttribute), false) is
+                                TopiAttribute attr))
+                            continue;
+                        if (!_externs.Contains(attr.Name)) continue;
+                        var func = Function.Create(method);
+                        _functions.Add(func);
+                        Set(attr.Name, func.Call,
+                            (byte) method.GetParameters().Length);
                     }
                 }
             }
