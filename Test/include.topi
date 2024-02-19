@@ -1,0 +1,6 @@
+// set to incorrect calculations to ensure externs are being called
+extern const sqrPrint = |x| print(x + x)
+extern const sumPrint = |a, b| print(a - b)
+extern const strPrint = |str| print(str)
+extern const sqr = |x| return x + x
+extern const test = |t| print("test")

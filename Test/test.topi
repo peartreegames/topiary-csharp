@@ -1,14 +1,9 @@
+include "./include.topi"
+
 var value = 111
 var list = List{1,2,3,4,55}
 var set = Set{"one", "two"}
 var map = Map{1: "one", 2: "two"}
-
-// set to incorrect calculations to ensure externs are being called
-extern const sqrPrint = |x| print(x + x)
-extern const sumPrint = |a, b| print(a - b)
-extern const strPrint = |str| print(str)
-extern const sqr = |x| return x + x
-extern const test = |t| print("test")
 
 === START {
     :: "A person approaches."

@@ -18,17 +18,20 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Topiary\Topiary.csproj" />
+        <ProjectReference Include="..\Topiary\Topiary.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="test.topi">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+        <None Update="test.topi">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="include.topi">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="obj\Release\" />
+        <Folder Include="obj\Release\"/>
     </ItemGroup>
 
 </Project>
