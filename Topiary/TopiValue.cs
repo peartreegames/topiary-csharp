@@ -14,14 +14,14 @@ namespace PeartreeGames.Topiary
     public struct TopiValue : IDisposable, IEquatable<TopiValue>
     {
         [MarshalAs(UnmanagedType.U1)] public Tag tag;
-        public TopiValueData data;
+        private TopiValueData _data;
 
         public static TopiValue FromPtr(IntPtr ptr) => Marshal.PtrToStructure<TopiValue>(ptr);
 
         public TopiValue(bool b)
         {
             tag = Tag.Bool;
-            data = new TopiValueData
+            _data = new TopiValueData
             {
                 boolValue = (byte) (b ? 1 : 0)
             };
@@ -30,7 +30,7 @@ namespace PeartreeGames.Topiary
         public TopiValue(int i)
         {
             tag = Tag.Number;
-            data = new TopiValueData
+            _data = new TopiValueData
             {
                 numberValue = i
             };
@@ -39,7 +39,7 @@ namespace PeartreeGames.Topiary
         public TopiValue(float i)
         {
             tag = Tag.Number;
-            data = new TopiValueData
+            _data = new TopiValueData
             {
                 numberValue = i
             };
@@ -48,7 +48,7 @@ namespace PeartreeGames.Topiary
         public TopiValue(string s)
         {
             tag = Tag.String;
-            data = new TopiValueData
+            _data = new TopiValueData
             {
                 stringValue = Marshal.StringToHGlobalAnsi(s)
             };
@@ -67,42 +67,42 @@ namespace PeartreeGames.Topiary
 
 
         public bool Bool => tag == Tag.Bool
-            ? data.boolValue == 1
+            ? _data.boolValue == 1
             : throw new InvalidOperationException($"Value {tag} cannot be used as bool");
 
         public int Int => tag == Tag.Number
-            ? Convert.ToInt32(data.numberValue)
+            ? Convert.ToInt32(_data.numberValue)
             : throw new InvalidOperationException($"Value {tag} cannot be used as int");
 
         public float Float => tag == Tag.Number
-            ? data.numberValue
+            ? _data.numberValue
             : throw new InvalidOperationException($"Value {tag} cannot be used as float");
 
         public string String => tag == Tag.String
-            ? Library.PtrToUtf8String(data.stringValue)
+            ? Library.PtrToUtf8String(_data.stringValue)
             : throw new InvalidOperationException($"Value {tag} cannot be used as string");
 
         public TopiValue[] List => tag == Tag.List
-            ? data.listValue.List
+            ? _data.listValue.List
             : throw new InvalidOperationException($"Value {tag} cannot be used as list");
 
         public HashSet<TopiValue> Set => tag == Tag.Set
-            ? data.listValue.Set
+            ? _data.listValue.Set
             : throw new InvalidOperationException($"Value {tag} cannot be used as set");
 
         public Dictionary<TopiValue, TopiValue> Map => tag == Tag.Map
-            ? data.listValue.Map
+            ? _data.listValue.Map
             : throw new InvalidOperationException($"Value {tag} cannot be used as set");
 
         // Will create boxing, better to use the above is value type is known
         public object? Value => tag switch
         {
-            Tag.Bool => data.boolValue == 1,
-            Tag.Number => data.numberValue,
-            Tag.String => Library.PtrToUtf8String(data.stringValue),
-            Tag.List => data.listValue.List,
-            Tag.Set => data.listValue.Set,
-            Tag.Map => data.listValue.Map,
+            Tag.Bool => _data.boolValue == 1,
+            Tag.Number => _data.numberValue,
+            Tag.String => Library.PtrToUtf8String(_data.stringValue),
+            Tag.List => _data.listValue.List,
+            Tag.Set => _data.listValue.Set,
+            Tag.Map => _data.listValue.Map,
             _ => null
         };
 
@@ -111,12 +111,12 @@ namespace PeartreeGames.Topiary
         public override string ToString() =>
             tag switch
             {
-                Tag.Bool => data.boolValue == 1 ? "True" : "False",
-                Tag.Number => data.numberValue.ToString(CultureInfo.CurrentCulture),
-                Tag.String => Library.PtrToUtf8String(data.stringValue),
-                Tag.List => $"[{string.Join(", ", data.listValue.List)}]",
-                Tag.Set => $"{{{string.Join(", ", data.listValue.Set)}}}",
-                Tag.Map => $"{{{string.Join(", ", data.listValue.Map)}}}",
+                Tag.Bool => _data.boolValue == 1 ? "True" : "False",
+                Tag.Number => _data.numberValue.ToString(CultureInfo.CurrentCulture),
+                Tag.String => Library.PtrToUtf8String(_data.stringValue),
+                Tag.List => $"List{{{string.Join(", ", _data.listValue.List)}}}",
+                Tag.Set => $"Set{{{string.Join(", ", _data.listValue.Set)}}}",
+                Tag.Map => $"Map{{{string.Join(", ", _data.listValue.Map)}}}",
                 _ => $"{tag}: null"
             } ?? throw new InvalidOperationException();
 
@@ -131,15 +131,15 @@ namespace PeartreeGames.Topiary
             switch (tag)
             {
                 case Tag.Bool:
-                    return data.boolValue == other.data.boolValue;
+                    return _data.boolValue == other._data.boolValue;
                 case Tag.Number:
-                    return Math.Abs(data.numberValue - other.data.numberValue) < 0.0001f;
+                    return Math.Abs(_data.numberValue - other._data.numberValue) < 0.0001f;
                 case Tag.String:
-                    return data.stringValue == other.data.stringValue;
+                    return _data.stringValue == other._data.stringValue;
                 case Tag.List:
                 case Tag.Set:
                 case Tag.Map:
-                    return data.listValue.Equals(other.data.listValue);
+                    return _data.listValue.Equals(other._data.listValue);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -154,12 +154,12 @@ namespace PeartreeGames.Topiary
                 return ((int) tag * 397) ^ tag switch
                 {
                     Tag.Nil => 0,
-                    Tag.Bool => data.boolValue.GetHashCode(),
-                    Tag.Number => data.numberValue.GetHashCode(),
-                    Tag.String => data.stringValue.GetHashCode(),
-                    Tag.List => data.listValue.GetHashCode(),
-                    Tag.Set => data.listValue.GetHashCode(),
-                    Tag.Map => data.listValue.GetHashCode(),
+                    Tag.Bool => _data.boolValue.GetHashCode(),
+                    Tag.Number => _data.numberValue.GetHashCode(),
+                    Tag.String => _data.stringValue.GetHashCode(),
+                    Tag.List => _data.listValue.GetHashCode(),
+                    Tag.Set => _data.listValue.GetHashCode(),
+                    Tag.Map => _data.listValue.GetHashCode(),
                     _ => -1
                 };
             }
@@ -170,7 +170,7 @@ namespace PeartreeGames.Topiary
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public struct TopiValueData
+    internal struct TopiValueData
     {
         [FieldOffset(0)] [MarshalAs(UnmanagedType.I1)]
         public byte boolValue;
@@ -185,12 +185,12 @@ namespace PeartreeGames.Topiary
 
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct TopiList
+    internal struct TopiList
     {
         public IntPtr listPtr;
         [MarshalAs(UnmanagedType.U2)] public short count;
 
-        public TopiValue[] List
+        internal TopiValue[] List
         {
             get
             {
@@ -206,7 +206,7 @@ namespace PeartreeGames.Topiary
             }
         }
 
-        public HashSet<TopiValue> Set
+        internal HashSet<TopiValue> Set
         {
             get
             {
@@ -222,7 +222,7 @@ namespace PeartreeGames.Topiary
             }
         }
 
-        public Dictionary<TopiValue, TopiValue> Map
+        internal Dictionary<TopiValue, TopiValue> Map
         {
             get
             {

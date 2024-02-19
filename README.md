@@ -2,6 +2,8 @@
 
 This package provides a wrapper for [topiary](https://github.com/peartreegames/topiary) functions.
 
+Current topiary v0.8.0
+
 ## Setup
 
  - Add Topiary to your project with nuget or cloning this repo.

@@ -40,8 +40,7 @@ namespace PeartreeGames.Topiary.Test
 
         private static void Compile()
         {
-            var text = File.ReadAllText("./test.topi");
-            var compiled = Story.Compile(text);
+            var compiled = Story.Compile(Path.GetFullPath("./test.topi"));
             File.WriteAllBytes("./test.topib", compiled);
             Assert.That(Path.Exists("./test.topib"), Is.True);
         }

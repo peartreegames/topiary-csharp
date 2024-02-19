@@ -8,7 +8,10 @@ namespace PeartreeGames.Topiary
     public readonly struct Dialogue
     {
         [MarshalAs(UnmanagedType.LPUTF8Str)] public readonly string Content;
+        [MarshalAs(UnmanagedType.U4)] public readonly int ContentLength;
         [MarshalAs(UnmanagedType.LPUTF8Str)] public readonly string Speaker;
+        [MarshalAs(UnmanagedType.U4)] public readonly int SpeakerLength;
+        
 
         private readonly IntPtr _tagsPtr;
         private readonly byte _tagsLen;

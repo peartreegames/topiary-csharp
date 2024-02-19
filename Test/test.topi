@@ -1,7 +1,7 @@
 var value = 111
-var list = [1,2,3,4,55]
-var set = {"one", "two"}
-var map = {1: "one", 2: "two"}
+var list = List{1,2,3,4,55}
+var set = Set{"one", "two"}
+var map = Map{1: "one", 2: "two"}
 
 // set to incorrect calculations to ensure externs are being called
 extern const sqrPrint = |x| print(x + x)

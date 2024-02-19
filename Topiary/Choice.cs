@@ -7,6 +7,7 @@ namespace PeartreeGames.Topiary
     public readonly struct Choice
     {
         [MarshalAs(UnmanagedType.LPUTF8Str)] public readonly string Content;
+        [MarshalAs(UnmanagedType.U4)] public readonly int ContentLength;
         [MarshalAs(UnmanagedType.U4)] public readonly int Count;
         [MarshalAs(UnmanagedType.U4)] internal readonly int Ip;
 

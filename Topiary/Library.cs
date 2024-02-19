@@ -143,7 +143,7 @@ namespace PeartreeGames.Topiary
         public delegate void StartDelegate(IntPtr vmPtr);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void CompileDelegate(byte[] source, int sourceLength, byte[] output,
+        public delegate void CompileDelegate(string path, int pathLength, byte[] output,
             int capacity);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -67,14 +68,15 @@ namespace PeartreeGames.Topiary
         /// Compile a ".topi" file into bytes.
         /// Should be saved to a ".topib" file
         /// </summary>
-        /// <param name="source">The file contents</param>
+        /// <param name="fullPath">The file absolute path</param>
+        /// <param name="severity">Log severity</param>
         /// <returns>Compiled bytes</returns>
-        public static byte[] Compile(string source)
+        public static byte[] Compile(string fullPath, Library.Severity severity = Library.Severity.Error)
         {
             var lib = new Library();
-            var bytes = Encoding.UTF8.GetBytes(source);
-            var output = new byte[bytes.Length * 10];
-            lib.Compile(bytes, bytes.Length, output, output.Length);
+            lib.SetDebugSeverity(severity);
+            var output = new byte[5_242_800];
+            lib.Compile(fullPath, fullPath.Length, output, output.Length);
             lib.Dispose();
             return output;
         }
