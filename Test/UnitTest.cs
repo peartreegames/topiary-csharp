@@ -1,7 +1,5 @@
 using System;
 using System.IO;
-using System.Reflection.Metadata;
-using NuGet.Frameworks;
 using NUnit.Framework;
 
 namespace PeartreeGames.Topiary.Test
