@@ -17,7 +17,7 @@
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <LangVersion>8</LangVersion>
-        <TargetFrameworks>net471;netstandard2.1</TargetFrameworks>
+        <TargetFramework>net471</TargetFramework>
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
@@ -42,8 +42,5 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="obj\" />
     </ItemGroup>
 </Project>

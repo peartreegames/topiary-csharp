@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -38,8 +39,8 @@ namespace PeartreeGames.Topiary
             _externs = ByteCode.GetExterns(reader);
             _onDialogue = onDialogue;
             _onChoices = onChoices;
-            Library.OnChoicesDelegate onChoicesDel = OnChoices;
-            Library.OnDialogueDelegate onDialogueDel = OnDialogue;
+            Delegates.OnChoicesDelegate onChoicesDel = OnChoices;
+            Delegates.OnDialogueDelegate onDialogueDel = OnDialogue;
 
             if (Library.IsUnityRuntime)
             {
@@ -69,16 +70,17 @@ namespace PeartreeGames.Topiary
         /// Should be saved to a ".topib" file
         /// </summary>
         /// <param name="fullPath">The file absolute path</param>
-        /// <param name="severity">Log severity</param>
+        /// <param name="severity" default="Error">Log severity</param>
+        /// <param name="capacity" default="5_242_800">Optional capacity for the bytecode</param>
         /// <returns>Compiled bytes</returns>
-        public static byte[] Compile(string fullPath, Library.Severity severity = Library.Severity.Error)
+        public static byte[] Compile(string fullPath, Library.Severity severity = Library.Severity.Error, long capacity = 5_242_800)
         {
             var lib = new Library();
             lib.SetDebugSeverity(severity);
-            var output = new byte[5_242_800];
-            lib.Compile(fullPath, fullPath.Length, output, output.Length);
+            var output = new byte[capacity];
+            var size = lib.Compile(fullPath, fullPath.Length, output, output.Length);
             lib.Dispose();
-            return output;
+            return output.Take(size).ToArray();
         }
 
         private void OnDialogue(IntPtr vmPtr, Dialogue dialogue) => _onDialogue(this, dialogue);
@@ -135,7 +137,7 @@ namespace PeartreeGames.Topiary
         /// </summary>
         /// <param name="name">The name of the variable</param>
         /// <param name="callback">The callback to be executed on change</param>
-        public bool Subscribe(string name, Library.Subscriber callback) =>
+        public bool Subscribe(string name, Delegates.Subscriber callback) =>
             _library.Subscribe(_vmPtr, name, name.Length,
                 Marshal.GetFunctionPointerForDelegate(callback));
 
@@ -144,7 +146,7 @@ namespace PeartreeGames.Topiary
         /// </summary>
         /// <param name="name">The name of the variable</param>
         /// <param name="callback">The callback that was passed into Subscribe</param>
-        public bool Unsubscribe(string name, Library.Subscriber callback) =>
+        public bool Unsubscribe(string name, Delegates.Subscriber callback) =>
             _library.Unsubscribe(_vmPtr, name, name.Length,
                 Marshal.GetFunctionPointerForDelegate(callback));
 
@@ -180,7 +182,7 @@ namespace PeartreeGames.Topiary
         /// <param name="name">The name of the variable</param>
         /// <param name="function">The value to set</param>
         /// <param name="arity">The number of parameters the function accepts</param>
-        public void Set(string name, Library.ExternFunctionDelegate function, byte arity)
+        public void Set(string name, Delegates.ExternFunctionDelegate function, byte arity)
         {
             var ptr = Marshal.GetFunctionPointerForDelegate(function);
             _library.SetExternFunc(_vmPtr, name, name.Length, ptr, arity);

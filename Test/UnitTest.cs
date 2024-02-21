@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Reflection.Metadata;
+using NuGet.Frameworks;
 using NUnit.Framework;
 
 namespace PeartreeGames.Topiary.Test
@@ -8,10 +10,11 @@ namespace PeartreeGames.Topiary.Test
     {
         private static void OnDialogue(Story story, Dialogue dialogue)
         {
-            Console.WriteLine($":{dialogue.Speaker}: {dialogue.Content} {string.Join('#', dialogue.Tags)}");
+            Console.WriteLine(
+                $":{dialogue.Speaker}: {dialogue.Content} {string.Join('#', dialogue.Tags)}");
             story.Continue();
         }
-        
+
         private static void OnChoices(Story story, Choice[] choices)
         {
             foreach (var choice in choices)
@@ -40,9 +43,13 @@ namespace PeartreeGames.Topiary.Test
 
         private static void Compile()
         {
-            var compiled = Story.Compile(Path.GetFullPath("./test.topi"));
+            Library.OnDebugLogMessage -= LogMsg;
+            Library.OnDebugLogMessage += LogMsg;
+            var compiled = Story.Compile(Path.GetFullPath("./test.topi"), Library.Severity.Debug);
+            Assert.That(compiled, Is.Not.Empty);
             File.WriteAllBytes("./test.topib", compiled);
             Assert.That(Path.Exists("./test.topib"), Is.True);
+            Library.OnDebugLogMessage -= LogMsg;
         }
 
         private static void Print(ref TopiValue value) =>
@@ -61,14 +68,14 @@ namespace PeartreeGames.Topiary.Test
             var i = value.Int;
             Console.WriteLine($"SqrPrint:: {i * i}");
         }
-        
+
 
         [Topi("sumPrint")]
         private static void SumPrint(TopiValue a, TopiValue b)
         {
             Console.WriteLine($"SumPrint:: {a.Float + b.Float}");
         }
-        
+
 
         [Topi("sqr")]
         private static TopiValue Sqr(TopiValue value)
@@ -83,8 +90,8 @@ namespace PeartreeGames.Topiary.Test
             var story = new Story(data, OnDialogue, OnChoices, Library.Severity.Info);
             Library.OnDebugLogMessage += LogMsg;
             story.BindFunctions(new[] {typeof(Tests).Assembly});
-            var print = new Library.Subscriber(Print);
-            story.Subscribe( "value", print);
+            var print = new Delegates.Subscriber(Print);
+            story.Subscribe("value", print);
             story.Subscribe("nope", print);
             try
             {
@@ -95,7 +102,7 @@ namespace PeartreeGames.Topiary.Test
                 }
             }
             catch (Exception e)
-            { 
+            {
                 Console.WriteLine(e);
             }
 
@@ -127,6 +134,7 @@ namespace PeartreeGames.Topiary.Test
                 default:
                     throw new ArgumentOutOfRangeException(nameof(severity), severity, null);
             }
+
             Console.ResetColor();
         }
     }
