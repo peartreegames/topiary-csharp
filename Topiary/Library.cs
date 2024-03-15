@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -40,7 +41,8 @@ namespace PeartreeGames.Topiary
                 _safeHandle = Loader.Load();
                 Interlocked.Increment(ref _count);
                 SetDebugLog = CreateDelegate<Delegates.SetDebugLogDelegate>("setDebugLog");
-                SetDebugSeverity = CreateDelegate<Delegates.SetDebugSeverityDelegate>("setDebugSeverity");
+                SetDebugSeverity =
+                    CreateDelegate<Delegates.SetDebugSeverityDelegate>("setDebugSeverity");
                 _logDelegate = Log;
 
                 var logPtr = Marshal.GetFunctionPointerForDelegate(_logDelegate);
@@ -61,8 +63,10 @@ namespace PeartreeGames.Topiary
                 DestroyValue = CreateDelegate<Delegates.DestroyValueDelegate>("destroyValue");
                 Subscribe = CreateDelegate<Delegates.SubscribeDelegate>("subscribe");
                 Unsubscribe = CreateDelegate<Delegates.UnsubscribeDelegate>("unsubscribe");
-                SetExternNumber = CreateDelegate<Delegates.SetExternNumberDelegate>("setExternNumber");
-                SetExternString = CreateDelegate<Delegates.SetExternStringDelegate>("setExternString");
+                SetExternNumber =
+                    CreateDelegate<Delegates.SetExternNumberDelegate>("setExternNumber");
+                SetExternString =
+                    CreateDelegate<Delegates.SetExternStringDelegate>("setExternString");
                 SetExternBool = CreateDelegate<Delegates.SetExternBoolDelegate>("setExternBool");
                 SetExternNil = CreateDelegate<Delegates.SetExternNilDelegate>("setExternNil");
                 SetExternFunc = CreateDelegate<Delegates.SetExternFuncDelegate>("setExternFunc");
@@ -119,25 +123,29 @@ namespace PeartreeGames.Topiary
 
 
         // Since we're targeting .net471 for unity we need to create our own ptr<>utf8?
-        public static string PtrToUtf8String(IntPtr pointer)
+        public static string PtrToUtf8String(IntPtr pointer, int? count = null)
         {
+            if (count > 0)
+            {
+                var len = count.Value - 1;
+                var bytes = new byte[len];
+                Marshal.Copy(pointer, bytes, 0, len);
+                return System.Text.Encoding.UTF8.GetString(bytes);
+            }
+            
             var byteList = new List<byte>(64);
             byte readByte;
             var offset = 0;
             do
             {
                 readByte = Marshal.ReadByte(pointer, offset);
-                if (readByte != 0)
-                {
-                    byteList.Add(readByte);
-                }
-
+                if (readByte != 0) byteList.Add(readByte);
                 offset++;
             } while (readByte != 0);
 
+
             var byteArray = byteList.ToArray();
-            var result = System.Text.Encoding.UTF8.GetString(byteArray);
-            return result;
+            return System.Text.Encoding.UTF8.GetString(byteArray);
         }
     }
 }

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace PeartreeGames.Topiary
@@ -33,7 +31,7 @@ namespace PeartreeGames.Topiary
         {
             _library = new Library();
             _library.SetDebugSeverity(severity);
-            
+
             using var memStream = new MemoryStream(source);
             using var reader = new BinaryReader(memStream);
             _externs = ByteCode.GetExterns(reader);
@@ -73,7 +71,8 @@ namespace PeartreeGames.Topiary
         /// <param name="severity" default="Error">Log severity</param>
         /// <param name="capacity" default="5_242_800">Optional capacity for the bytecode</param>
         /// <returns>Compiled bytes</returns>
-        public static byte[] Compile(string fullPath, Library.Severity severity = Library.Severity.Error, long capacity = 5_242_800)
+        public static byte[] Compile(string fullPath,
+            Library.Severity severity = Library.Severity.Error, long capacity = 5_242_800)
         {
             var lib = new Library();
             lib.SetDebugSeverity(severity);
@@ -91,7 +90,12 @@ namespace PeartreeGames.Topiary
         /// <summary>
         /// Start the Story
         /// </summary>
-        public void Start() => _library.Start(_vmPtr);
+        /// <param name="bough">
+        /// Optional: The bough path where the conversation will start.
+        /// If non provided, first bough in the file will be used
+        /// </param>
+        public void Start(string? bough = null) =>
+            _library.Start(_vmPtr, bough ?? "", bough?.Length ?? 0);
 
         /// <summary>
         /// Run the Story until the next Dialogue or Choice

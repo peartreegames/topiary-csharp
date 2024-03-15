@@ -29,7 +29,7 @@ namespace PeartreeGames.Topiary
         public delegate void DestroyVmDelegate(IntPtr vmPtr);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void StartDelegate(IntPtr vmPtr);
+        public delegate void StartDelegate(IntPtr vmPtr, string bough, int boughLength);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.U4)]

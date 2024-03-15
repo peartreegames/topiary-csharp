@@ -8,8 +8,9 @@ namespace PeartreeGames.Topiary.Test
     {
         private static void OnDialogue(Story story, Dialogue dialogue)
         {
-            Console.WriteLine(
-                $":{dialogue.Speaker}: {dialogue.Content} {string.Join('#', dialogue.Tags)}");
+            Console.Write($":{dialogue.Speaker}: {dialogue.Content} ");
+            foreach(var tag in dialogue.Tags) Console.Write($"#{tag} ");
+            Console.Write("\n");
             story.Continue();
         }
 
@@ -17,11 +18,13 @@ namespace PeartreeGames.Topiary.Test
         {
             foreach (var choice in choices)
             {
-                Console.WriteLine($">>> {choice.Content}");
+                Console.Write($">>> {choice.Content} ");
+                foreach(var tag in choice.Tags) Console.Write($"#{tag} ");
+                Console.Write("\n");
             }
 
             var index = new Random(DateTime.Now.Millisecond).Next(0, choices.Length);
-            Console.WriteLine($"Choice: {index}");
+            Console.WriteLine($"Random Choice: {index}");
             story.SelectChoice(index);
         }
 
@@ -43,7 +46,7 @@ namespace PeartreeGames.Topiary.Test
         {
             Library.OnDebugLogMessage -= LogMsg;
             Library.OnDebugLogMessage += LogMsg;
-            var compiled = Story.Compile(Path.GetFullPath("./test.topi"), Library.Severity.Debug);
+            var compiled = Story.Compile(Path.GetFullPath("./test.topi"));
             Assert.That(compiled, Is.Not.Empty);
             File.WriteAllBytes("./test.topib", compiled);
             Assert.That(Path.Exists("./test.topib"), Is.True);
@@ -85,7 +88,7 @@ namespace PeartreeGames.Topiary.Test
         private static void Run()
         {
             var data = File.ReadAllBytes("./test.topib");
-            var story = new Story(data, OnDialogue, OnChoices, Library.Severity.Info);
+            var story = new Story(data, OnDialogue, OnChoices, Library.Severity.Warn);
             Library.OnDebugLogMessage += LogMsg;
             story.BindFunctions(new[] {typeof(Tests).Assembly});
             var print = new Delegates.Subscriber(Print);

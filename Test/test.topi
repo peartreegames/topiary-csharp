@@ -6,20 +6,18 @@ var set = Set{"one", "two"}
 var map = Map{1: "one", 2: "two"}
 
 === START {
-    :: "A person approaches."
+    :: "A person approaches." #starting
     :Stranger: "Hey there. {sqr(123)}"
     sqrPrint(value)
     sumPrint(1.23, 1.37)
     strPrint("TESTING")
     fork^ {
-        ~ "Greet them." {
+        ~ "Greet them." #lots #of #tags #added {
             :Drew: "Oh, uh, nice to meet you. My name is Drew."
             :Drew: "Sorry, I thought you were someone I knew."
             :Drew: "I'd love to stay and chat, but this is just a short demo."
         }
-        ~ "Say nothing." :: "The person acts as though they were addressing someone else."
+        ~ "Say nothing." #cont :: "The person acts as though they were addressing someone else."
     }
-    :: "They walk away..."
+    :: "They walk away..." #end #fin
 }
-
-=> START
