@@ -5,7 +5,7 @@ using IntPtr = System.IntPtr;
 namespace PeartreeGames.Topiary
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct Dialogue
+    public readonly struct Dialogue
     {
         private readonly IntPtr _contentPtr;
         [MarshalAs(UnmanagedType.U4)] private readonly int _contentLen;
@@ -13,29 +13,24 @@ namespace PeartreeGames.Topiary
         [MarshalAs(UnmanagedType.U4)] private readonly int _speakerLen;
         private readonly IntPtr _tagsPtr;
         private readonly byte _tagsLen;
-
-        [NonSerialized] private string _content;
-        [NonSerialized] private string _speaker;
-        [NonSerialized] private string[] _tags;
-
-        public string Content => _content ??= Library.PtrToUtf8String(_contentPtr, _contentLen);
-        public string Speaker => _speaker ??= Library.PtrToUtf8String(_speakerPtr, _speakerLen);
+        
+        public string Content => Library.PtrToUtf8String(_contentPtr, _contentLen);
+        public string Speaker => Library.PtrToUtf8String(_speakerPtr, _speakerLen);
 
         public string[] Tags
         {
             get
             {
-                if (_tags != null) return _tags;
                 if (_tagsLen == 0) return Array.Empty<string>();
                 var offset = 0;
-                _tags = new string[_tagsLen];
+                var tags = new string[_tagsLen];
                 for (var i = 0; i < _tagsLen; i++)
                 {
                     var ptr = Marshal.ReadIntPtr(_tagsPtr, offset);
-                    _tags[i] = Library.PtrToUtf8String(ptr);
+                    tags[i] = Library.PtrToUtf8String(ptr);
                     offset += IntPtr.Size;
                 }
-                return _tags;
+                return tags;
             }
         }
     }

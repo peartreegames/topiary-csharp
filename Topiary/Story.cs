@@ -19,6 +19,7 @@ namespace PeartreeGames.Topiary
         private readonly SortedSet<string> _externs;
         private GCHandle _onDialogueHandle;
         private GCHandle _onChoicesHandle;
+        public bool IsValid => _vmPtr != IntPtr.Zero;
 
         public delegate void OnDialogueCallback(Story story, Dialogue dialogue);
 
@@ -94,8 +95,8 @@ namespace PeartreeGames.Topiary
         /// Optional: The bough path where the conversation will start.
         /// If non provided, first bough in the file will be used
         /// </param>
-        public void Start(string? bough = null) =>
-            _library.Start(_vmPtr, bough ?? "", bough?.Length ?? 0);
+        public void Start(string bough = "") =>
+            _library.Start(_vmPtr, bough, bough.Length);
 
         /// <summary>
         /// Run the Story until the next Dialogue or Choice

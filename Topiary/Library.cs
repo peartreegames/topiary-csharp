@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -127,10 +126,10 @@ namespace PeartreeGames.Topiary
         {
             if (count > 0)
             {
-                var len = count.Value - 1;
+                var len = count.Value;
                 var bytes = new byte[len];
                 Marshal.Copy(pointer, bytes, 0, len);
-                return System.Text.Encoding.UTF8.GetString(bytes);
+                return System.Text.Encoding.UTF8.GetString(bytes).TrimEnd('\u0000');
             }
             
             var byteList = new List<byte>(64);
