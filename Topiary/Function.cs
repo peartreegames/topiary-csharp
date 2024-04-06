@@ -7,17 +7,27 @@ namespace PeartreeGames.Topiary
     public class Function : IDisposable
     {
         private readonly Delegate _delegate;
+        private readonly Delegates.ExternFunctionDelegate _callDel;
         private GCHandle _handle;
+        private GCHandle _callHandle;
 
         public Function(Delegate del)
         {
             _delegate = del;
-            if (Library.IsUnityRuntime) _handle = GCHandle.Alloc(_delegate, GCHandleType.Pinned);
+            _callDel = Call;
+            if (Library.IsUnityRuntime)
+            {
+                _handle = GCHandle.Alloc(_delegate, GCHandleType.Pinned);
+                _callHandle = GCHandle.Alloc(_callDel, GCHandleType.Pinned); 
+            }
         }
+        
+        public IntPtr GetCallIntPtr() => Marshal.GetFunctionPointerForDelegate(_callDel);
 
         public void Dispose()
         {
             if (_handle.IsAllocated) _handle.Free();
+            if (_callHandle.IsAllocated) _callHandle.Free();
         }
 
         public delegate TopiValue FuncDel();

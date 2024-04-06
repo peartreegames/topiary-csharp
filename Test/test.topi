@@ -5,12 +5,19 @@ var list = List{1,2,3,4,55}
 var set = Set{"one", "two"}
 var map = Map{1: "one", 2: "two"}
 
+const imp = |str| return "<color=#FFAAAAFF>{str}</color>"
+var calc = |y| return |x| return x + y
+var preCalc = calc(101)
+var calcValue = preCalc(101)
+
+sumPrint(calcValue, 0)
 === START {
     :: "A person approaches." #starting
-    :Stranger: "Hey there. {sqr(123)}"
+    :Stranger: "Hey there. {sqr(123)} {imp("test")} How are you"
     sqrPrint(value)
     sumPrint(1.23, 1.37)
     strPrint("TESTING")
+    list[0] = 11
     fork^ {
         ~ "Greet them." #lots #of #tags #added {
             :Drew: "Oh, uh, nice to meet you. My name is Drew."

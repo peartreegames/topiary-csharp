@@ -6,7 +6,7 @@ namespace PeartreeGames.Topiary
     public static class Delegates
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void OnDialogueDelegate(IntPtr vmPtr, Dialogue dialogue);
+        public delegate void OnLineDelegate(IntPtr vmPtr, Line line);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void OnChoicesDelegate(IntPtr vmPtr, IntPtr choicePtr, byte length);
@@ -22,7 +22,7 @@ namespace PeartreeGames.Topiary
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate IntPtr CreateVmDelegate(byte[] source, int sourceLength,
-            IntPtr onDialoguePtr,
+            IntPtr onLinePtr,
             IntPtr onChoicesPtr);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -35,6 +35,11 @@ namespace PeartreeGames.Topiary
         [return: MarshalAs(UnmanagedType.U4)]
         public delegate int CompileDelegate(string path, int pathLength, byte[] output,
             int capacity);
+        
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U4)]
+        public delegate int CalculateCompileSizeDelegate(string path, int pathLength);
+        
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void RunDelegate(IntPtr vmPt);
@@ -92,6 +97,17 @@ namespace PeartreeGames.Topiary
         public delegate void SetExternFuncDelegate(IntPtr vmPtr, string name, int nameLength,
             IntPtr funcPtr,
             byte arity);
+        
+        
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U4)]
+        public delegate int CalculateStateSizeDelegate(IntPtr vmPtr);
+        
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int SaveStateDelegate(IntPtr vmPtr, byte[] output, int capacity);
+        
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void LoadStateDelegate(IntPtr vmPtr, string json, int jsonLength);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void SetDebugLogDelegate(IntPtr logPtr);

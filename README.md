@@ -2,23 +2,23 @@
 
 This package provides a wrapper for [topiary](https://github.com/peartreegames/topiary) functions.
 
-Current topiary v0.8.0
+Current topiary v0.12.0
 
 ## Setup
 
  - Add Topiary to your project with nuget or cloning this repo.
- - Compile your .topi file with `Story.Compile(string)` (always good to serialize the returns `byte[]` and store for runtime)
- - Create your OnDialogue and OnChoices Callbacks
-   - `public delegate void OnDialogueCallback(Story story, Dialogue dialogue);`
-   - `public delegate void OnChoicesCallback(Story story, Choice[] choices);`
- - Create a new Story with `var story = new Story(bytes, onDialogue, onChoices, logSeverity)`
- - Run your story until the end, calling `story.SelectContinue()` after every `onDialogue` and `story.SelectChoice(int)` after every `onChoices` that's invoked.
+ - Compile your .topi file with `Dialogue.Compile(string)` (always good to serialize the returns `byte[]` and store for runtime)
+ - Create your OnLine and OnChoices Callbacks
+   - `public delegate void OnLineCallback(Dialogue dialogue, Line dialogue);`
+   - `public delegate void OnChoicesCallback(Dialogue dialogue, Choice[] choices);`
+ - Create a new Dialogue with `var dialogue = new Dialogue(bytes, onLine, onChoices, logSeverity)`
+ - Run your dialogue until the end, calling `dialogue.SelectContinue()` after every `onLine` and `dialogue.SelectChoice(int)` after every `onChoices` that's invoked.
    - ```csharp
         try
         {
-            story.Start();
-            // this example assumes onDialogue calls story.SelectContinue() itself
-            while (story.CanContinue) story.Run();
+            dialogue.Start();
+            // this example assumes onLine calls dialogue.SelectContinue() itself
+            while (dialogue.CanContinue) dialogue.Run();
         }
         catch (Exception e)
         {
@@ -57,7 +57,7 @@ private static TopiValue Sqr(TopiValue value)
 }
 ```
 
-Then you can bind all the functions with the attribute in the assembly with `story.BindFunctions(Assemblies[])`
+Then you can bind all the functions with the attribute in the assembly with `dialogue.BindFunctions(Assemblies[])`
 
 ## Values
 

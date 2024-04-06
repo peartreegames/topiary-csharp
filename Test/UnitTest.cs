@@ -6,26 +6,28 @@ namespace PeartreeGames.Topiary.Test
 {
     public class Tests
     {
-        private static void OnDialogue(Story story, Dialogue dialogue)
+        private static string? _state;
+
+        private static void OnLine(Dialogue dialogue, Line line)
         {
-            Console.Write($":{dialogue.Speaker}: {dialogue.Content} ");
-            foreach(var tag in dialogue.Tags) Console.Write($"#{tag} ");
+            Console.Write($":{line.Speaker}: {line.Content} ");
+            foreach (var tag in line.Tags) Console.Write($"#{tag} ");
             Console.Write("\n");
-            story.Continue();
+            dialogue.Continue();
         }
 
-        private static void OnChoices(Story story, Choice[] choices)
+        private static void OnChoices(Dialogue dialogue, Choice[] choices)
         {
             foreach (var choice in choices)
             {
                 Console.Write($">>> {choice.Content} ");
-                foreach(var tag in choice.Tags) Console.Write($"#{tag} ");
+                foreach (var tag in choice.Tags) Console.Write($"#{tag} ");
                 Console.Write("\n");
             }
 
             var index = new Random(DateTime.Now.Millisecond).Next(0, choices.Length);
             Console.WriteLine($"Random Choice: {index}");
-            story.SelectChoice(index);
+            dialogue.SelectChoice(index);
         }
 
 
@@ -34,19 +36,19 @@ namespace PeartreeGames.Topiary.Test
         {
         }
 
-        [Test]
         public void CompileAndRun()
         {
             Compile();
             Run();
+            RunLoaded();
         }
 
-
-        private static void Compile()
+        [Test]
+        public void Compile()
         {
             Library.OnDebugLogMessage -= LogMsg;
             Library.OnDebugLogMessage += LogMsg;
-            var compiled = Story.Compile(Path.GetFullPath("./test.topi"));
+            var compiled = Dialogue.Compile(Path.GetFullPath("./test.topi"));
             Assert.That(compiled, Is.Not.Empty);
             File.WriteAllBytes("./test.topib", compiled);
             Assert.That(Path.Exists("./test.topib"), Is.True);
@@ -85,21 +87,22 @@ namespace PeartreeGames.Topiary.Test
             return new TopiValue(i * i);
         }
 
-        private static void Run()
+        [Test]
+        public void Run()
         {
             var data = File.ReadAllBytes("./test.topib");
-            var story = new Story(data, OnDialogue, OnChoices, Library.Severity.Warn);
+            var dialogue = new Dialogue(data, OnLine, OnChoices, Library.Severity.Warn);
             Library.OnDebugLogMessage += LogMsg;
-            story.BindFunctions(new[] {typeof(Tests).Assembly});
+            dialogue.BindFunctions(new[] {typeof(Tests).Assembly});
             var print = new Delegates.Subscriber(Print);
-            story.Subscribe("value", print);
-            story.Subscribe("nope", print);
+            dialogue.Subscribe("value", print);
+            dialogue.Subscribe("nope", print);
             try
             {
-                story.Start();
-                while (story.CanContinue)
+                dialogue.Start();
+                while (dialogue.CanContinue)
                 {
-                    story.Run();
+                    dialogue.Run();
                 }
             }
             catch (Exception e)
@@ -107,12 +110,30 @@ namespace PeartreeGames.Topiary.Test
                 Console.WriteLine(e);
             }
 
-            story.Unsubscribe("value", print);
-            using var list = story.GetValue("list");
+            dialogue.Unsubscribe("value", print);
+            using var list = dialogue.GetValue("list");
             Console.WriteLine($"{list.tag} = {list}");
-            using var set = story.GetValue("set");
+            using var set = dialogue.GetValue("set");
             Console.WriteLine($"{set.tag} = {set}");
-            using var map = story.GetValue("map");
+            using var map = dialogue.GetValue("map");
+            Console.WriteLine($"{map.tag} = {map}");
+            _state = dialogue.SaveState();
+        }
+
+        [Test]
+        public void RunLoaded()
+        {
+            Console.WriteLine(_state);
+            var data = File.ReadAllBytes("./test.topib");
+            var dialogue = new Dialogue(data, OnLine, OnChoices, Library.Severity.Warn);
+            Library.OnDebugLogMessage += LogMsg;
+            dialogue.BindFunctions(new[] {typeof(Tests).Assembly});
+            dialogue.LoadState(_state);
+            using var list = dialogue.GetValue("list");
+            Console.WriteLine($"{list.tag} = {list}");
+            using var set = dialogue.GetValue("set");
+            Console.WriteLine($"{set.tag} = {set}");
+            using var map = dialogue.GetValue("map");
             Console.WriteLine($"{map.tag} = {map}");
         }
 

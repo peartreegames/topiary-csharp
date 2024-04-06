@@ -52,7 +52,9 @@ namespace PeartreeGames.Topiary
                 CreateVm = CreateDelegate<Delegates.CreateVmDelegate>("createVm");
                 DestroyVm = CreateDelegate<Delegates.DestroyVmDelegate>("destroyVm");
                 Start = CreateDelegate<Delegates.StartDelegate>("start");
-                Compile = CreateDelegate<Delegates.CompileDelegate>("compile");
+                CalculateCompileSize =
+                    CreateDelegate<Delegates.CalculateCompileSizeDelegate>("calculateCompileSize");
+                Compile = CreateDelegate<Delegates.CompileDelegate>("compile"); 
                 Run = CreateDelegate<Delegates.RunDelegate>("run");
                 SelectContinue = CreateDelegate<Delegates.SelectContinueDelegate>("selectContinue");
                 CanContinue = CreateDelegate<Delegates.CanContinueDelegate>("canContinue");
@@ -69,6 +71,10 @@ namespace PeartreeGames.Topiary
                 SetExternBool = CreateDelegate<Delegates.SetExternBoolDelegate>("setExternBool");
                 SetExternNil = CreateDelegate<Delegates.SetExternNilDelegate>("setExternNil");
                 SetExternFunc = CreateDelegate<Delegates.SetExternFuncDelegate>("setExternFunc");
+                CalculateStateSize =
+                    CreateDelegate<Delegates.CalculateStateSizeDelegate>("calculateStateSize");
+                SaveState = CreateDelegate<Delegates.SaveStateDelegate>("saveState");
+                LoadState = CreateDelegate<Delegates.LoadStateDelegate>("loadState");
             }
         }
 
@@ -88,6 +94,7 @@ namespace PeartreeGames.Topiary
         public readonly Delegates.CreateVmDelegate CreateVm;
         public readonly Delegates.DestroyVmDelegate DestroyVm;
         public readonly Delegates.StartDelegate Start;
+        public readonly Delegates.CalculateCompileSizeDelegate CalculateCompileSize;
         public readonly Delegates.CompileDelegate Compile;
         public readonly Delegates.RunDelegate Run;
         public readonly Delegates.SelectContinueDelegate SelectContinue;
@@ -103,6 +110,10 @@ namespace PeartreeGames.Topiary
         public readonly Delegates.SetExternBoolDelegate SetExternBool;
         public readonly Delegates.SetExternNilDelegate SetExternNil;
         public readonly Delegates.SetExternFuncDelegate SetExternFunc;
+        public readonly Delegates.CalculateStateSizeDelegate CalculateStateSize;
+        public readonly Delegates.SaveStateDelegate SaveState;
+        public readonly Delegates.LoadStateDelegate LoadState;
+        
         public readonly Delegates.SetDebugLogDelegate SetDebugLog;
         public readonly Delegates.SetDebugSeverityDelegate SetDebugSeverity;
 
@@ -124,6 +135,7 @@ namespace PeartreeGames.Topiary
         // Since we're targeting .net471 for unity we need to create our own ptr<>utf8?
         public static string PtrToUtf8String(IntPtr pointer, int? count = null)
         {
+            if (count == 0) return string.Empty;
             if (count > 0)
             {
                 var len = count.Value;
@@ -142,9 +154,7 @@ namespace PeartreeGames.Topiary
                 offset++;
             } while (readByte != 0);
 
-
-            var byteArray = byteList.ToArray();
-            return System.Text.Encoding.UTF8.GetString(byteArray);
+            return System.Text.Encoding.UTF8.GetString( byteList.ToArray());
         }
     }
 }
