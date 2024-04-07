@@ -18,6 +18,8 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <LangVersion>8</LangVersion>
         <TargetFramework>net471</TargetFramework>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <DocumentationMarkdown>$(MSBuildProjectDirectory)\..\docs\api.md</DocumentationMarkdown>
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
@@ -32,6 +34,12 @@
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
         <DefineConstants>OS_MAC</DefineConstants>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile>bin\Debug\Topiary.CSharp..xml</DocumentationFile>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>bin\Release\Topiary.CSharp.xml</DocumentationFile>
+    </PropertyGroup>
     <ItemGroup>
         <None Include="../README.md" Pack="true" PackagePath=""/>
         <None Include="../LICENSE" Pack="true" PackagePath=""/>
@@ -39,6 +47,12 @@
         <EmbeddedResource Include="..\topi.dll" />
         <EmbeddedResource Include="..\topi.lib" />
         <EmbeddedResource Include="..\topi.pdb" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Vsxmd" Version="1.4.5">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>

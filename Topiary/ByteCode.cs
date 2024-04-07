@@ -6,8 +6,16 @@ using System.Text;
 
 namespace PeartreeGames.Topiary
 {
+    /// <summary>
+    /// Provides a set of methods for working with bytecode.
+    /// </summary>
     public static class ByteCode
     {
+        /// <summary>
+        /// Retrieves a sorted set of external names from the given binary reader.
+        /// </summary>
+        /// <param name="reader">The binary reader from which to read the external names.</param>
+        /// <returns>A sorted set of external names.</returns>
         public static SortedSet<string> GetExterns(BinaryReader reader)
         {
             var globalSymbolsCount = reader.ReadUInt64();

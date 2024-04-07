@@ -61,7 +61,7 @@ Then you can bind all the functions with the attribute in the assembly with `dia
 
 ## Values
 
-Currently only the following value types are valid in the C# bindings (*Experiemental and requires deallocating memory):
+Currently only the following value types are valid in the C# bindings (*Experimental, readonly, and requires deallocating memory):
  - Null
  - Bool
  - Float

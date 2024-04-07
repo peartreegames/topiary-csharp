@@ -4,10 +4,15 @@ using System.Runtime.InteropServices;
 
 namespace PeartreeGames.Topiary
 {
+    /// <summary>
+    /// Represents a function that can be called dynamically.
+    /// </summary>
     public class Function : IDisposable
     {
         private readonly Delegate _delegate;
+
         private readonly Delegates.ExternFunctionDelegate _callDel;
+
         private GCHandle _handle;
         private GCHandle _callHandle;
 
@@ -21,9 +26,16 @@ namespace PeartreeGames.Topiary
                 _callHandle = GCHandle.Alloc(_callDel, GCHandleType.Pinned); 
             }
         }
-        
+
+        /// <summary>
+        /// Returns the function pointer for the GetCallIntPtr method.
+        /// </summary>
+        /// <returns>The function pointer for the GetCallIntPtr method.</returns>
         public IntPtr GetCallIntPtr() => Marshal.GetFunctionPointerForDelegate(_callDel);
 
+        /// <summary>
+        /// Disposes of the resources used by the Function instance.
+        /// </summary>
         public void Dispose()
         {
             if (_handle.IsAllocated) _handle.Free();
@@ -31,30 +43,33 @@ namespace PeartreeGames.Topiary
         }
 
         public delegate TopiValue FuncDel();
-
         public delegate TopiValue FuncDel1(TopiValue value1);
-
         public delegate TopiValue FuncDel2(TopiValue value1, TopiValue value2);
-
         public delegate TopiValue FuncDel3(TopiValue value1, TopiValue value2, TopiValue value3);
-
         public delegate TopiValue FuncDel4(TopiValue value1, TopiValue value2, TopiValue value3,
             TopiValue value4);
 
         public delegate void ActionDel();
-
         public delegate void ActionDel1(TopiValue value1);
-
         public delegate void ActionDel2(TopiValue value1, TopiValue value2);
-
         public delegate void ActionDel3(TopiValue value1, TopiValue value2, TopiValue value3);
-
         public delegate void ActionDel4(TopiValue value1, TopiValue value2, TopiValue value3,
             TopiValue value4);
 
-
+        /// <summary>
+        /// Converts the Function object to its string representation.
+        /// </summary>
+        /// <returns>
+        /// A string that represents the current Function object.
+        /// </returns>
         public override string ToString() => $"Function {_delegate.Method.Name}";
 
+        /// <summary>
+        /// Executes the delegate stored in the Function object.
+        /// </summary>
+        /// <param name="argPtr">A pointer to the arguments for the delegate.</param>
+        /// <param name="count">The number of arguments.</param>
+        /// <returns>The result of executing the delegate.</returns>
         public TopiValue Call(IntPtr argPtr, byte count)
         {
             var args = CreateArgs(argPtr, count);
@@ -90,6 +105,12 @@ namespace PeartreeGames.Topiary
             }
         }
 
+        /// <summary>
+        /// Creates an array of TopiValue objects from the given IntPtr and count.
+        /// </summary>
+        /// <param name="argPtr">The IntPtr pointing to the start of the memory block containing the TopiValues.</param>
+        /// <param name="count">The number of TopiValues to create.</param>
+        /// <returns>An array of TopiValue objects.</returns>
         private static TopiValue[] CreateArgs(IntPtr argPtr, byte count)
         {
             var args = new TopiValue[count];
@@ -103,6 +124,12 @@ namespace PeartreeGames.Topiary
             return args;
         }
 
+        /// <summary>
+        /// Creates a <see cref="Function"/> object based on the given <see cref="MethodInfo"/>.
+        /// </summary>
+        /// <param name="method">The <see cref="MethodInfo"/> representing the method.</param>
+        /// <returns>A new instance of <see cref="Function"/> created from the method.</returns>
+        /// <exception cref="NotSupportedException">Thrown when the number of parameters is not supported.</exception>
         public static Function Create(MethodInfo method)
         {
             var parameters = method.GetParameters();

@@ -16,6 +16,11 @@ namespace PeartreeGames.Topiary
         [MarshalAs(UnmanagedType.U1)] public Tag tag;
         private TopiValueData _data;
 
+        /// <summary>
+        /// Converts a pointer to a TopiValue struct.
+        /// </summary>
+        /// <param name="ptr">The pointer to the TopiValue struct.</param>
+        /// <returns>The converted TopiValue.</returns>
         public static TopiValue FromPtr(IntPtr ptr) => Marshal.PtrToStructure<TopiValue>(ptr);
 
         public TopiValue(bool b)
@@ -54,14 +59,44 @@ namespace PeartreeGames.Topiary
             };
         }
 
+        /// <summary>
+        /// Represents the different types of tags for the TopiValue struct.
+        /// </summary>
         public enum Tag : byte
         {
+            /// <summary>
+            /// Represents the Nil tag of the <see cref="Tag"/> enum.
+            /// </summary>
             Nil,
+
+            /// <summary>
+            /// Represents a boolean value in the Topiary framework.
+            /// </summary>
             Bool,
+
+            /// <summary>
+            /// Represents a numeric value in the TopiValue enum.
+            /// </summary>
             Number,
+
+            /// <summary>
+            /// Represents a string value in the <see cref="TopiValue"/> enum.
+            /// </summary>
             String,
+
+            /// <summary>
+            /// Represents the different tags for the TopiValue enum.
+            /// </summary>
             List,
+
+            /// <summary>
+            /// Represents a member of the enum Tag that signifies a Set type.
+            /// </summary>
             Set,
+
+            /// <summary>
+            /// Represents a member of the enum Tag with the value Map.
+            /// </summary>
             Map
         }
 
@@ -106,8 +141,22 @@ namespace PeartreeGames.Topiary
             _ => null
         };
 
-        public T As<T>() => (T) Convert.ChangeType(Value, typeof(T));
+        /// <summary>
+        /// Gets the value of the TopiValue as the specified type.
+        /// Will create boxing, better to use the above is value type is known
+        /// </summary>
+        /// <typeparam name="T">The type to convert the value to.</typeparam>
+        /// <returns>The value of the TopiValue as type T.</returns>
+        /// <remarks>
+        /// This method converts the underlying value of the TopiValue to the specified type T.
+        /// If the conversion is not possible, an InvalidCastException will be thrown.
+        /// </remarks>
+        public T AsType<T>() => (T) Convert.ChangeType(Value, typeof(T));
 
+        /// <summary>
+        /// Converts the TopiValue object to its string representation.
+        /// </summary>
+        /// <returns>The string representation of the TopiValue object.</returns>
         public override string ToString() =>
             tag switch
             {
@@ -120,11 +169,19 @@ namespace PeartreeGames.Topiary
                 _ => $"{tag}: null"
             } ?? throw new InvalidOperationException();
 
+        /// <summary>
+        /// Releases the resources used by the TopiValue.
+        /// </summary>
         public void Dispose()
         {
             Library.Global.DestroyValue(ref this);
         }
 
+        /// <summary>
+        /// Determines whether the current instance is equal to the specified object.
+        /// </summary>
+        /// <param name="other">The object to compare with the current instance.</param>
+        /// <returns>True if the current instance is equal to the specified object; otherwise, false.</returns>
         public bool Equals(TopiValue other)
         {
             if (tag != other.tag) return false;
@@ -145,8 +202,17 @@ namespace PeartreeGames.Topiary
             }
         }
 
+        /// <summary>
+        /// Determines whether the current instance is equal to another TopiValue object.
+        /// </summary>
+        /// <param name="obj">The TopiValue object to compare with the current instance.</param>
+        /// <returns>true if the current instance is equal to the other object; otherwise, false.</returns>
         public override bool Equals(object? obj) => obj is TopiValue other && Equals(other);
 
+        /// <summary>
+        /// Gets the hash code of the TopiValue object.
+        /// </summary>
+        /// <returns>The hash code of the TopiValue object.</returns>
         public override int GetHashCode()
         {
             unchecked

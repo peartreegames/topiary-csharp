@@ -4,6 +4,10 @@ using IntPtr = System.IntPtr;
 
 namespace PeartreeGames.Topiary
 {
+    
+    /// <summary>
+    /// Dialogue Line
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct Line
     {
@@ -14,9 +18,18 @@ namespace PeartreeGames.Topiary
         private readonly IntPtr _tagsPtr;
         private readonly byte _tagsLen;
         
-        public string Content => Library.PtrToUtf8String(_contentPtr, _contentLen);
+        /// <summary>
+        /// The Speaker of the dialogue line
+        /// </summary>
         public string Speaker => Library.PtrToUtf8String(_speakerPtr, _speakerLen);
-
+        /// <summary>
+        /// The words spoken
+        /// </summary>
+        public string Content => Library.PtrToUtf8String(_contentPtr, _contentLen);
+        
+        /// <summary>
+        /// Array of tags
+        /// </summary>
         public string[] Tags
         {
             get

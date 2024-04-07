@@ -8,6 +8,9 @@ using System.Text.RegularExpressions;
 
 namespace PeartreeGames.Topiary
 {
+    /// <summary>
+    /// Represents a dialogue instance.
+    /// </summary>
     public class Dialogue : IDisposable
     {
         private readonly Library _library;
@@ -19,14 +22,38 @@ namespace PeartreeGames.Topiary
         private readonly SortedSet<string> _externs;
         private GCHandle _onLineHandle;
         private GCHandle _onChoicesHandle;
+
+        /// <summary>
+        /// Gets a value indicating whether the Dialogue instance is valid.
+        /// </summary>
+        /// <remarks>
+        /// This property returns <c>true</c> if the internal pointer <c>_vmPtr</c> is not zero;
+        /// otherwise, it returns <c>false</c>.
+        /// </remarks>
         public bool IsValid => _vmPtr != IntPtr.Zero;
 
+        /// <summary>
+        /// Represents a callback method that processes each line of dialogue.
+        /// </summary>
+        /// <param name="dialogue">The Dialogue object that invoked the callback.</param>
+        /// <param name="line">The line of dialogue being processed.</param>
         public delegate void OnLineCallback(Dialogue dialogue, Line line);
 
+        /// <summary>
+        /// Represents a callback function for handling choices in a dialogue.
+        /// </summary>
+        /// <param name="dialogue">The dialogue in which the choice is being made.</param>
+        /// <param name="choices">The array of choices available to the player.</param>
         public delegate void OnChoicesCallback(Dialogue dialogue, Choice[] choices);
 
+        /// <summary>
+        /// Represents a library that provides functionality for creating and managing dialogues.
+        /// </summary>
         public Library Library => _library;
 
+        /// <summary>
+        /// Represents a dialogue.
+        /// </summary>
         public Dialogue(byte[] source, OnLineCallback onLine, OnChoicesCallback onChoices,
             Library.Severity severity = Library.Severity.Error)
         {
@@ -52,6 +79,9 @@ namespace PeartreeGames.Topiary
             _vmPtr = _library.CreateVm(source, source.Length, linePtr, choicesPtr);
         }
 
+        /// <summary>
+        /// Releases all resources used by the Dialogue object.
+        /// </summary>
         public void Dispose()
         {
             if (_vmPtr == IntPtr.Zero) return;
@@ -126,7 +156,17 @@ namespace PeartreeGames.Topiary
         /// </summary>
         public void Continue() => _library.SelectContinue(_vmPtr);
 
+        /// <summary>
+        /// Gets a value indicating whether the dialogue can continue.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the dialogue can continue; otherwise, <c>false</c>.
+        /// </value>
         public bool CanContinue => _library.CanContinue(_vmPtr);
+
+        /// <summary>
+        /// Gets a value indicating whether the dialogue is waiting for user input.
+        /// </summary>
         public bool IsWaiting => _library.IsWaiting(_vmPtr);
 
         /// <summary>
