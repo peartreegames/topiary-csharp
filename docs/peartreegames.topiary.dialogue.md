@@ -8,7 +8,7 @@ Represents a dialogue instance.
 public class Dialogue : System.IDisposable
 ```
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [Dialogue](./peartreegames.topiary.dialogue.md)<br>
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [Dialogue](./peartreegames.topiary.dialogue.md)  
 Implements [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable)
 
 ## Properties
@@ -23,7 +23,7 @@ public bool IsValid { get; }
 
 #### Property Value
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 
 **Remarks:**
 
@@ -40,7 +40,7 @@ public Library Library { get; }
 
 #### Property Value
 
-[Library](./peartreegames.topiary.library.md)<br>
+[Library](./peartreegames.topiary.library.md)  
 
 ### **CanContinue**
 
@@ -52,7 +52,7 @@ public bool CanContinue { get; }
 
 #### Property Value
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 `true` if the dialogue can continue; otherwise, `false`.
 
 ### **IsWaiting**
@@ -65,7 +65,7 @@ public bool IsWaiting { get; }
 
 #### Property Value
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 
 ## Constructors
 
@@ -79,13 +79,13 @@ public Dialogue(Byte[] source, OnLineCallback onLine, OnChoicesCallback onChoice
 
 #### Parameters
 
-`source` [Byte[]](https://docs.microsoft.com/en-us/dotnet/api/system.byte)<br>
+`source` [Byte[]](https://docs.microsoft.com/en-us/dotnet/api/system.byte)  
 
-`onLine` [OnLineCallback](./peartreegames.topiary.dialogue.onlinecallback.md)<br>
+`onLine` [OnLineCallback](./peartreegames.topiary.dialogue.onlinecallback.md)  
 
-`onChoices` [OnChoicesCallback](./peartreegames.topiary.dialogue.onchoicescallback.md)<br>
+`onChoices` [OnChoicesCallback](./peartreegames.topiary.dialogue.onchoicescallback.md)  
 
-`severity` [Severity](./peartreegames.topiary.library.severity.md)<br>
+`severity` [Severity](./peartreegames.topiary.library.severity.md)  
 
 ## Methods
 
@@ -109,15 +109,15 @@ public static Byte[] Compile(string fullPath, Severity severity)
 
 #### Parameters
 
-`fullPath` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`fullPath` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The file absolute path
 
-`severity` [Severity](./peartreegames.topiary.library.severity.md)<br>
+`severity` [Severity](./peartreegames.topiary.library.severity.md)  
 Log severity
 
 #### Returns
 
-[Byte[]](https://docs.microsoft.com/en-us/dotnet/api/system.byte)<br>
+[Byte[]](https://docs.microsoft.com/en-us/dotnet/api/system.byte)  
 Compiled bytes
 
 ### **Compile(String, Int64, Severity)**
@@ -131,18 +131,18 @@ public static Byte[] Compile(string fullPath, long capacity, Severity severity)
 
 #### Parameters
 
-`fullPath` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`fullPath` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The file absolute path
 
-`capacity` [Int64](https://docs.microsoft.com/en-us/dotnet/api/system.int64)<br>
+`capacity` [Int64](https://docs.microsoft.com/en-us/dotnet/api/system.int64)  
 Capacity for the bytecode output
 
-`severity` [Severity](./peartreegames.topiary.library.severity.md)<br>
+`severity` [Severity](./peartreegames.topiary.library.severity.md)  
 Log severity
 
 #### Returns
 
-[Byte[]](https://docs.microsoft.com/en-us/dotnet/api/system.byte)<br>
+[Byte[]](https://docs.microsoft.com/en-us/dotnet/api/system.byte)  
 Compiled bytes
 
 ### **Start(String)**
@@ -155,7 +155,7 @@ public void Start(string bough)
 
 #### Parameters
 
-`bough` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`bough` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 Optional: The bough path where the conversation will start.
  If non provided, first bough in the file will be used
 
@@ -169,7 +169,7 @@ public void Run()
 
 #### Exceptions
 
-[Exception](https://docs.microsoft.com/en-us/dotnet/api/system.exception)<br>
+[Exception](https://docs.microsoft.com/en-us/dotnet/api/system.exception)  
 
 ### **Continue()**
 
@@ -189,7 +189,7 @@ public void SelectChoice(int index)
 
 #### Parameters
 
-`index` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+`index` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)  
 The index of the choice selected
 
 ### **SaveState()**
@@ -204,7 +204,7 @@ public string SaveState()
 
 #### Returns
 
-[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 
 ### **SaveState(Int64)**
 
@@ -217,12 +217,12 @@ public string SaveState(long capacity)
 
 #### Parameters
 
-`capacity` [Int64](https://docs.microsoft.com/en-us/dotnet/api/system.int64)<br>
+`capacity` [Int64](https://docs.microsoft.com/en-us/dotnet/api/system.int64)  
 The maximum size of bytes to allocate
 
 #### Returns
 
-[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 
 ### **LoadState(String)**
 
@@ -234,7 +234,7 @@ public void LoadState(string json)
 
 #### Parameters
 
-`json` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`json` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 JSON string
 
 ### **GetValue(String)**
@@ -247,12 +247,12 @@ public TopiValue GetValue(string name)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The name of the variable
 
 #### Returns
 
-[TopiValue](./peartreegames.topiary.topivalue.md)<br>
+[TopiValue](./peartreegames.topiary.topivalue.md)  
 TopiValue.nil if not found
 
 ### **DestroyValue(TopiValue&)**
@@ -266,7 +266,7 @@ public void DestroyValue(TopiValue& value)
 
 #### Parameters
 
-`value` [TopiValue&](./peartreegames.topiary.topivalue&.md)<br>
+`value` [TopiValue&](./peartreegames.topiary.topivalue&.md)  
 The value to be destroyed
 
 ### **Subscribe(String, Subscriber)**
@@ -279,15 +279,15 @@ public bool Subscribe(string name, Subscriber callback)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The name of the variable
 
-`callback` [Subscriber](./peartreegames.topiary.delegates.subscriber.md)<br>
+`callback` [Subscriber](./peartreegames.topiary.delegates.subscriber.md)  
 The callback to be executed on change
 
 #### Returns
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 
 ### **Unsubscribe(String, Subscriber)**
 
@@ -299,15 +299,15 @@ public bool Unsubscribe(string name, Subscriber callback)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The name of the variable
 
-`callback` [Subscriber](./peartreegames.topiary.delegates.subscriber.md)<br>
+`callback` [Subscriber](./peartreegames.topiary.delegates.subscriber.md)  
 The callback that was passed into Subscribe
 
 #### Returns
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 
 ### **Set(String, Boolean)**
 
@@ -319,10 +319,10 @@ public void Set(string name, bool value)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The name of the variable
 
-`value` [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+`value` [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 The value to set
 
 ### **Set(String, Single)**
@@ -335,10 +335,10 @@ public void Set(string name, float value)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The name of the variable
 
-`value` [Single](https://docs.microsoft.com/en-us/dotnet/api/system.single)<br>
+`value` [Single](https://docs.microsoft.com/en-us/dotnet/api/system.single)  
 The value to set
 
 ### **Set(String, String)**
@@ -351,10 +351,10 @@ public void Set(string name, string value)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The name of the variable
 
-`value` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`value` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The value to set
 
 ### **Set(String, Function, Byte)**
@@ -369,13 +369,13 @@ public void Set(string name, Function function, byte arity)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The name of the variable
 
-`function` [Function](./peartreegames.topiary.function.md)<br>
+`function` [Function](./peartreegames.topiary.function.md)  
 The value to set
 
-`arity` [Byte](https://docs.microsoft.com/en-us/dotnet/api/system.byte)<br>
+`arity` [Byte](https://docs.microsoft.com/en-us/dotnet/api/system.byte)  
 The number of parameters the function accepts
 
 ### **Unset(String)**
@@ -388,7 +388,7 @@ public void Unset(string name)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The name of the variable
 
 ### **BindFunctions(IEnumerable&lt;Assembly&gt;)**
@@ -404,4 +404,4 @@ public void BindFunctions(IEnumerable<Assembly> assemblies)
 
 #### Parameters
 
-`assemblies` [IEnumerable&lt;Assembly&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1)<br>
+`assemblies` [IEnumerable&lt;Assembly&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerable-1)  

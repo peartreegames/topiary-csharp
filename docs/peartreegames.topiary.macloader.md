@@ -8,7 +8,7 @@ Represents a loader interface for loading and interacting with libraries.
 public class MacLoader : Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid, System.IDisposable, ILoader
 ```
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [CriticalFinalizerObject](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.constrainedexecution.criticalfinalizerobject) → [SafeHandle](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.safehandle) → [SafeHandleZeroOrMinusOneIsInvalid](https://docs.microsoft.com/en-us/dotnet/api/microsoft.win32.safehandles.safehandlezeroorminusoneisinvalid) → [MacLoader](./peartreegames.topiary.macloader.md)<br>
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [CriticalFinalizerObject](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.constrainedexecution.criticalfinalizerobject) → [SafeHandle](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.safehandle) → [SafeHandleZeroOrMinusOneIsInvalid](https://docs.microsoft.com/en-us/dotnet/api/microsoft.win32.safehandles.safehandlezeroorminusoneisinvalid) → [MacLoader](./peartreegames.topiary.macloader.md)  
 Implements [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable), [ILoader](./peartreegames.topiary.iloader.md)
 
 ## Properties
@@ -21,7 +21,7 @@ public bool IsInvalid { get; }
 
 #### Property Value
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 
 ### **IsClosed**
 
@@ -31,7 +31,7 @@ public bool IsClosed { get; }
 
 #### Property Value
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 
 ## Constructors
 
@@ -45,7 +45,7 @@ public MacLoader(bool ownsHandle)
 
 #### Parameters
 
-`ownsHandle` [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+`ownsHandle` [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 
 ## Methods
 
@@ -59,7 +59,7 @@ public SafeHandle Load()
 
 #### Returns
 
-[SafeHandle](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.safehandle)<br>
+[SafeHandle](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.safehandle)  
 A SafeHandle object representing the loaded library.
 
 ### **Free(IntPtr)**
@@ -72,12 +72,12 @@ public bool Free(IntPtr ptr)
 
 #### Parameters
 
-`ptr` [IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)<br>
+`ptr` [IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)  
 The pointer to the library handle.
 
 #### Returns
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 `true` if the library handle is successfully freed; otherwise, `false`.
 
 ### **GetProc(String)**
@@ -90,12 +90,12 @@ public IntPtr GetProc(string name)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The name of the function to retrieve.
 
 #### Returns
 
-[IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)<br>
+[IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)  
 The address of the specified function if the function is found, or IntPtr.Zero if the function is not found.
 
 ### **ReleaseHandle()**
@@ -108,5 +108,5 @@ protected bool ReleaseHandle()
 
 #### Returns
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 `true` if the handle is successfully released; otherwise, `false`.

@@ -23,7 +23,7 @@ public string Name { get; private set; }
 
 #### Property Value
 
-[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 
 ### **TypeId**
 
@@ -33,7 +33,7 @@ public object TypeId { get; }
 
 #### Property Value
 
-[Object](https://docs.microsoft.com/en-us/dotnet/api/system.object)<br>
+[Object](https://docs.microsoft.com/en-us/dotnet/api/system.object)  
 
 ## Constructors
 
@@ -48,5 +48,5 @@ public TopiAttribute(string name)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 Name of the function in the topi file

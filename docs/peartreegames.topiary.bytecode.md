@@ -22,10 +22,10 @@ public static SortedSet<string> GetExterns(BinaryReader reader)
 
 #### Parameters
 
-`reader` [BinaryReader](https://docs.microsoft.com/en-us/dotnet/api/system.io.binaryreader)<br>
+`reader` [BinaryReader](https://docs.microsoft.com/en-us/dotnet/api/system.io.binaryreader)  
 The binary reader from which to read the external names.
 
 #### Returns
 
-SortedSet&lt;String&gt;<br>
+SortedSet&lt;String&gt;  
 A sorted set of external names.

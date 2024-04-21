@@ -8,7 +8,7 @@ Represents a library of functions and utilities for working with dialogue system
 public class Library : System.IDisposable
 ```
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [Library](./peartreegames.topiary.library.md)<br>
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [Library](./peartreegames.topiary.library.md)  
 Implements [IDisposable](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable)
 
 ## Fields
@@ -183,7 +183,7 @@ public static int Count { get; }
 
 #### Property Value
 
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)  
 The count.
 
 ### **Global**
@@ -196,7 +196,7 @@ public static Library Global { get; }
 
 #### Property Value
 
-[Library](./peartreegames.topiary.library.md)<br>
+[Library](./peartreegames.topiary.library.md)  
 
 ### **IsUnityRuntime**
 
@@ -208,7 +208,7 @@ public static bool IsUnityRuntime { get; set; }
 
 #### Property Value
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 
 ### **Allocator**
 
@@ -220,7 +220,7 @@ public static IAllocator Allocator { get; set; }
 
 #### Property Value
 
-[IAllocator](./peartreegames.topiary.iallocator.md)<br>
+[IAllocator](./peartreegames.topiary.iallocator.md)  
 
 ## Constructors
 
@@ -252,15 +252,15 @@ public static string PtrToUtf8String(IntPtr pointer, Nullable<int> count)
 
 #### Parameters
 
-`pointer` [IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)<br>
+`pointer` [IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)  
 The pointer to the null-terminated UTF8-encoded string.
 
-`count` [Nullable&lt;Int32&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1)<br>
+`count` [Nullable&lt;Int32&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.nullable-1)  
 Optional: The number of bytes to read from the pointer. Use null to read until null termination.
 
 #### Returns
 
-[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The converted C# string.
 
 **Remarks:**

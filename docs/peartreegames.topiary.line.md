@@ -22,7 +22,7 @@ public string Speaker { get; }
 
 #### Property Value
 
-[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 
 ### **Content**
 
@@ -34,7 +34,7 @@ public string Content { get; }
 
 #### Property Value
 
-[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 
 ### **Tags**
 
@@ -46,4 +46,4 @@ public String[] Tags { get; }
 
 #### Property Value
 
-[String[]](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+[String[]](https://docs.microsoft.com/en-us/dotnet/api/system.string)  

@@ -20,12 +20,12 @@ SafeHandle Load()
 
 #### Returns
 
-[SafeHandle](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.safehandle)<br>
+[SafeHandle](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.safehandle)  
 A [SafeHandle](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.safehandle) representing the loaded library.
 
 #### Exceptions
 
-T:System.ComponentModel.Win32Exception<br>
+T:System.ComponentModel.Win32Exception  
 Thrown if the library failed to load.
 
 ### **Free(IntPtr)**
@@ -38,12 +38,12 @@ bool Free(IntPtr ptr)
 
 #### Parameters
 
-`ptr` [IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)<br>
+`ptr` [IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)  
 The pointer to the library handle.
 
 #### Returns
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)  
 `true` if the library handle is successfully freed; otherwise, `false`.
 
 ### **GetProc(String)**
@@ -56,10 +56,10 @@ IntPtr GetProc(string name)
 
 #### Parameters
 
-`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+`name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The name of the function to retrieve.
 
 #### Returns
 
-[IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)<br>
+[IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)  
 The address of the specified function if the function is found, or IntPtr.Zero if the function is not found.

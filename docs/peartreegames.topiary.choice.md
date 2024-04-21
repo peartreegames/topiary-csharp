@@ -22,7 +22,7 @@ public int VisitCount { get; }
 
 #### Property Value
 
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)  
 The visit count.
 
 ### **Ip**
@@ -35,7 +35,7 @@ public int Ip { get; }
 
 #### Property Value
 
-[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+[Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)  
 
 **Remarks:**
 
@@ -51,7 +51,7 @@ public string Content { get; }
 
 #### Property Value
 
-[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 
 ### **Tags**
 
@@ -63,7 +63,7 @@ public String[] Tags { get; }
 
 #### Property Value
 
-[String[]](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+[String[]](https://docs.microsoft.com/en-us/dotnet/api/system.string)  
 The tags associated with the choice.
 
 **Remarks:**
@@ -82,13 +82,13 @@ Choice[] MarshalPtr(IntPtr choicePtr, byte count)
 
 #### Parameters
 
-`choicePtr` [IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)<br>
+`choicePtr` [IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)  
 The pointer to the array of [Choice](./peartreegames.topiary.choice.md) structures.
 
-`count` [Byte](https://docs.microsoft.com/en-us/dotnet/api/system.byte)<br>
+`count` [Byte](https://docs.microsoft.com/en-us/dotnet/api/system.byte)  
 The number of [Choice](./peartreegames.topiary.choice.md) structures in the array.
 
 #### Returns
 
-[Choice[]](./peartreegames.topiary.choice.md)<br>
+[Choice[]](./peartreegames.topiary.choice.md)  
 An array of [Choice](./peartreegames.topiary.choice.md) structures.

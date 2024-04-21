@@ -6,7 +6,7 @@ Namespace: PeartreeGames.Topiary
 public struct ManagedAllocator
 ```
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype) → [ManagedAllocator](./peartreegames.topiary.managedallocator.md)<br>
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype) → [ManagedAllocator](./peartreegames.topiary.managedallocator.md)  
 Implements [IAllocator](./peartreegames.topiary.iallocator.md)
 
 ## Fields
@@ -27,11 +27,11 @@ IntPtr Allocate(ulong size)
 
 #### Parameters
 
-`size` [UInt64](https://docs.microsoft.com/en-us/dotnet/api/system.uint64)<br>
+`size` [UInt64](https://docs.microsoft.com/en-us/dotnet/api/system.uint64)  
 
 #### Returns
 
-[IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)<br>
+[IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)  
 
 ### **Deallocate(IntPtr)**
 
@@ -41,4 +41,4 @@ void Deallocate(IntPtr ptr)
 
 #### Parameters
 
-`ptr` [IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)<br>
+`ptr` [IntPtr](https://docs.microsoft.com/en-us/dotnet/api/system.intptr)  
