@@ -1,4 +1,3 @@
-<a name='assembly'></a>
 # Topiary.CSharp
 
 ## Contents

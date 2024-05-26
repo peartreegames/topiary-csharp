@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 
 namespace PeartreeGames.Topiary
 {
@@ -16,12 +14,12 @@ namespace PeartreeGames.Topiary
         private readonly Library _library;
         private IntPtr _vmPtr;
 
-        private readonly OnLineCallback _onLine;
-        private readonly OnChoicesCallback _onChoices;
-        private static readonly List<Function> Functions = new List<Function>();
-        private readonly SortedSet<string> _externs;
-        private GCHandle _onLineHandle;
-        private GCHandle _onChoicesHandle;
+        public SortedSet<string> Externs { get; }
+
+        public static readonly Dictionary<IntPtr, Dialogue> Dialogues =
+            new Dictionary<IntPtr, Dialogue>();
+
+        public IntPtr VmPtr => _vmPtr;
 
         /// <summary>
         /// Gets a value indicating whether the Dialogue instance is valid.
@@ -33,20 +31,6 @@ namespace PeartreeGames.Topiary
         public bool IsValid => _vmPtr != IntPtr.Zero;
 
         /// <summary>
-        /// Represents a callback method that processes each line of dialogue.
-        /// </summary>
-        /// <param name="dialogue">The Dialogue object that invoked the callback.</param>
-        /// <param name="line">The line of dialogue being processed.</param>
-        public delegate void OnLineCallback(Dialogue dialogue, Line line);
-
-        /// <summary>
-        /// Represents a callback function for handling choices in a dialogue.
-        /// </summary>
-        /// <param name="dialogue">The dialogue in which the choice is being made.</param>
-        /// <param name="choices">The array of choices available to the player.</param>
-        public delegate void OnChoicesCallback(Dialogue dialogue, Choice[] choices);
-
-        /// <summary>
         /// Represents a library that provides functionality for creating and managing dialogues.
         /// </summary>
         public Library Library => _library;
@@ -54,29 +38,29 @@ namespace PeartreeGames.Topiary
         /// <summary>
         /// Represents a dialogue.
         /// </summary>
-        public Dialogue(byte[] source, OnLineCallback onLine, OnChoicesCallback onChoices,
+        public Dialogue(byte[] source, Delegates.OnLineDelegate onLine,
+            Delegates.OnChoicesDelegate onChoices, Delegates.OutputLogDelegate logger,
             Library.Severity severity = Library.Severity.Error)
         {
-            _library = new Library();
-            _library.SetDebugSeverity(severity);
-
-            using var memStream = new MemoryStream(source);
-            using var reader = new BinaryReader(memStream);
-            _externs = ByteCode.GetExterns(reader);
-            _onLine = onLine;
-            _onChoices = onChoices;
-            Delegates.OnChoicesDelegate onChoicesDel = OnChoices;
-            Delegates.OnLineDelegate onLineDel = OnLine;
-
-            if (Library.IsUnityRuntime)
+            unsafe
             {
-                _onChoicesHandle = GCHandle.Alloc(onLineDel, GCHandleType.Pinned);
-                _onLineHandle = GCHandle.Alloc(onChoicesDel, GCHandleType.Pinned);
+                _library = new Library(logger);
+                _library.SetDebugSeverity(severity);
+
+                using var memStream = new MemoryStream(source);
+                using var reader = new BinaryReader(memStream);
+                Externs = ByteCode.GetExterns(reader);
+
+                var linePtr = Marshal.GetFunctionPointerForDelegate(onLine);
+                var choicesPtr = Marshal.GetFunctionPointerForDelegate(onChoices);
+                fixed (byte* pinned = source)
+                {
+                    var sourcePtr = (IntPtr)pinned;
+                    _vmPtr = _library.CreateVm(sourcePtr, source.Length, linePtr, choicesPtr);
+                }
             }
 
-            var linePtr = Marshal.GetFunctionPointerForDelegate(onLineDel);
-            var choicesPtr = Marshal.GetFunctionPointerForDelegate(onChoicesDel);
-            _vmPtr = _library.CreateVm(source, source.Length, linePtr, choicesPtr);
+            Dialogues.Add(_vmPtr, this);
         }
 
         /// <summary>
@@ -85,12 +69,9 @@ namespace PeartreeGames.Topiary
         public void Dispose()
         {
             if (_vmPtr == IntPtr.Zero) return;
+            Dialogues.Remove(_vmPtr);
             _library.DestroyVm(_vmPtr);
             _library.Dispose();
-            if (_onLineHandle.IsAllocated) _onLineHandle.Free();
-            if (_onChoicesHandle.IsAllocated) _onChoicesHandle.Free();
-            foreach (var func in Functions) func.Dispose();
-            Functions.Clear();
             _vmPtr = IntPtr.Zero;
         }
 
@@ -100,11 +81,13 @@ namespace PeartreeGames.Topiary
         /// Will precalculate the required capacity
         /// </summary>
         /// <param name="fullPath">The file absolute path</param>
+        /// <param name="logger"></param>
         /// <param name="severity" default="Error">Log severity</param>
         /// <returns>Compiled bytes</returns>
-        public static byte[] Compile(string fullPath, Library.Severity severity = Library.Severity.Error)
+        public static byte[] Compile(string fullPath, Delegates.OutputLogDelegate logger,
+            Library.Severity severity = Library.Severity.Error)
         {
-            var lib = new Library();
+            var lib = new Library(logger);
             lib.SetDebugSeverity(severity);
             var capacity = lib.CalculateCompileSize(fullPath, fullPath.Length);
             var output = new byte[capacity];
@@ -112,28 +95,26 @@ namespace PeartreeGames.Topiary
             lib.Dispose();
             return output;
         }
+
         /// <summary>
         /// Compile a ".topi" file into bytes.
         /// Should be saved to a ".topib" file
         /// </summary>
         /// <param name="fullPath">The file absolute path</param>
         /// <param name="capacity">Capacity for the bytecode output</param>
+        /// <param name="logger"></param>
         /// <param name="severity" default="Error">Log severity</param>
         /// <returns>Compiled bytes</returns>
-        public static byte[] Compile(string fullPath, long capacity, Library.Severity severity = Library.Severity.Error)
+        public static byte[] Compile(string fullPath, long capacity,
+            Delegates.OutputLogDelegate logger, Library.Severity severity = Library.Severity.Error)
         {
-            var lib = new Library();
+            var lib = new Library(logger);
             lib.SetDebugSeverity(severity);
             var output = new byte[capacity];
             var size = lib.Compile(fullPath, fullPath.Length, output, output.Length);
             lib.Dispose();
             return output.Take(size).ToArray();
         }
-
-        private void OnLine(IntPtr vmPtr, Line line) => _onLine(this, line);
-
-        private void OnChoices(IntPtr vmPtr, IntPtr choicesPtr, byte count) =>
-            _onChoices(this, Choice.MarshalPtr(choicesPtr, count));
 
         /// <summary>
         /// Start the Dialogue 
@@ -187,7 +168,7 @@ namespace PeartreeGames.Topiary
             _ = _library.SaveState(_vmPtr, output, output.Length);
             return System.Text.Encoding.UTF8.GetString(output);
         }
-        
+
         /// <summary>
         /// Save current Dialogue State to JSON
         /// Should merge the resulting JSON with the Game Root JSON State
@@ -198,7 +179,8 @@ namespace PeartreeGames.Topiary
             var output = new byte[capacity];
             var size = _library.SaveState(_vmPtr, output, output.Length);
             var segment = new ArraySegment<byte>(output, 0, size);
-            return System.Text.Encoding.UTF8.GetString(segment.Array!, segment.Offset, segment.Count);
+            return System.Text.Encoding.UTF8.GetString(segment.Array!, segment.Offset,
+                segment.Count);
         }
 
         /// <summary>
@@ -274,12 +256,23 @@ namespace PeartreeGames.Topiary
         /// Note: It is easier to use the TopiAttribute instead with the BindFunctions method
         /// However this is kept in case you need more control 
         /// </summary>
-        /// <param name="name">The name of the variable</param>
-        /// <param name="function">The value to set</param>
-        /// <param name="arity">The number of parameters the function accepts</param>
-        public void Set(string name, Function function, byte arity)
+        /// <param name="function">The function to set</param>
+        public void Set(Delegates.ExternFunctionDelegate function)
         {
-            _library.SetExternFunc(_vmPtr, name, name.Length, function.GetCallIntPtr(), arity);
+            var methodInfo = function.Method;
+            var topiAttributes = methodInfo.GetCustomAttributes(typeof(TopiAttribute), false);
+            if (topiAttributes.Length == 0)
+                throw new InvalidOperationException($"Missing TopiAttribute on function {methodInfo.Name}.");
+            if (topiAttributes.Length > 1)
+                throw new InvalidOperationException($"Only one instance of TopiAttribute is allowed on function {methodInfo.Name}");
+            
+            foreach (TopiAttribute topiAttribute in topiAttributes)
+            {
+                var name = topiAttribute.Name;
+                var arity = topiAttribute.Arity;
+                _library.SetExternFunc(_vmPtr, name, name.Length,
+                    Marshal.GetFunctionPointerForDelegate(function), arity);
+            }
         }
 
         /// <summary>
@@ -287,38 +280,5 @@ namespace PeartreeGames.Topiary
         /// </summary>
         /// <param name="name">The name of the variable</param>
         public void Unset(string name) => _library.SetExternNil(_vmPtr, name, name.Length);
-
-        /// <summary>
-        /// Bind all TopiAttribute functions within the given Assemblies
-        /// Functions must be of type "Func&lt;TopiValue[,TopiValue,TopiValue,TopiValue,TopiValue]&gt;"
-        /// or "Action[&lt;TopiValue,TopiValue,TopiValue,TopiValue&gt;]"
-        /// See <see cref="Function"/>
-        /// </summary>
-        /// <param name="assemblies"></param>
-        public void BindFunctions(IEnumerable<Assembly> assemblies)
-        {
-            foreach (var assembly in assemblies)
-            {
-                if (Regex.IsMatch(assembly.FullName,
-                        "^(System|Microsoft|mscorlib|netstandard|Windows|JetBrains|test)"))
-                    continue;
-                foreach (var type in assembly.DefinedTypes)
-                {
-                    foreach (var method in type.GetMethods(BindingFlags.Public |
-                                                           BindingFlags.Static |
-                                                           BindingFlags.NonPublic))
-                    {
-                        if (!(method.GetCustomAttribute(typeof(TopiAttribute), false) is
-                                TopiAttribute attr))
-                            continue;
-                        if (!_externs.Contains(attr.Name)) continue;
-                        var func = Function.Create(method);
-                        Functions.Add(func);
-                        Set(attr.Name, func,
-                            (byte) method.GetParameters().Length);
-                    }
-                }
-            }
-        }
     }
 }

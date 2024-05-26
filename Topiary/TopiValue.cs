@@ -230,6 +230,25 @@ namespace PeartreeGames.Topiary
                 };
             }
         }
+        
+        /// <summary>
+        /// Creates an array of TopiValue objects from the given IntPtr and count.
+        /// </summary>
+        /// <param name="argPtr">The IntPtr pointing to the start of the memory block containing the TopiValues.</param>
+        /// <param name="count">The number of TopiValues to create.</param>
+        /// <returns>An array of TopiValue objects.</returns>
+        public static TopiValue[] CreateArgs(IntPtr argPtr, byte count)
+        {
+            var args = new TopiValue[count];
+            var ptr = argPtr;
+            for (var i = 0; i < count; i++)
+            {
+                args[i] = FromPtr(ptr);
+                ptr = IntPtr.Add(ptr, Marshal.SizeOf<TopiValue>());
+            }
+
+            return args;
+        }
 
         public static bool operator ==(TopiValue left, TopiValue right) => left.Equals(right);
         public static bool operator !=(TopiValue left, TopiValue right) => !(left == right);

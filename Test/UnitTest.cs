@@ -8,16 +8,17 @@ namespace PeartreeGames.Topiary.Test
     {
         private static string? _state;
 
-        private static void OnLine(Dialogue dialogue, Line line)
+        private static void OnLine(IntPtr vmPtr, Line line)
         {
             Console.Write($":{line.Speaker}: {line.Content} ");
             foreach (var tag in line.Tags) Console.Write($"#{tag} ");
             Console.Write("\n");
-            dialogue.Continue();
+            Dialogue.Dialogues[vmPtr].Continue();
         }
 
-        private static void OnChoices(Dialogue dialogue, Choice[] choices)
+        private static void OnChoices(IntPtr vmPtr, IntPtr choicesPtr, byte count)
         {
+            var choices = Choice.MarshalPtr(choicesPtr, count);
             foreach (var choice in choices)
             {
                 Console.Write($">>> {choice.Content} ");
@@ -27,7 +28,7 @@ namespace PeartreeGames.Topiary.Test
 
             var index = new Random(DateTime.Now.Millisecond).Next(0, choices.Length);
             Console.WriteLine($"Random Choice: {index}");
-            dialogue.SelectChoice(index);
+            Dialogue.Dialogues[vmPtr].SelectChoice(index);
         }
 
 
@@ -46,43 +47,49 @@ namespace PeartreeGames.Topiary.Test
         [Test]
         public void Compile()
         {
-            Library.OnDebugLogMessage -= LogMsg;
-            Library.OnDebugLogMessage += LogMsg;
-            var compiled = Dialogue.Compile(Path.GetFullPath("./test.topi"));
+            var compiled = Dialogue.Compile(Path.GetFullPath("./test.topi"), Library.Log);
             Assert.That(compiled, Is.Not.Empty);
             File.WriteAllBytes("./test.topib", compiled);
             Assert.That(Path.Exists("./test.topib"), Is.True);
-            Library.OnDebugLogMessage -= LogMsg;
         }
 
         private static void Print(ref TopiValue value) =>
             Console.WriteLine($"PRINT:: {value.tag} = {value.Value}");
 
-        [Topi("strPrint")]
-        private static void StrPrint(TopiValue value)
+        [Topi("strPrint", 1)]
+        private static TopiValue StrPrint(IntPtr argsPtr, byte count)
         {
+            var value = TopiValue.CreateArgs(argsPtr, count)[0];
             var str = value.String;
             Console.WriteLine($"StrPrint:: {str}");
+            return default;
         }
 
-        [Topi("sqrPrint")]
-        private static void SqrPrint(TopiValue value)
+        [Topi("sqrPrint", 2)]
+        private static TopiValue SqrPrint(IntPtr argsPtr, byte count)
         {
+            var value = TopiValue.CreateArgs(argsPtr, count)[0];
             var i = value.Int;
             Console.WriteLine($"SqrPrint:: {i * i}");
+            return default;
         }
 
 
-        [Topi("sumPrint")]
-        private static void SumPrint(TopiValue a, TopiValue b)
+        [Topi("sumPrint", 2)]
+        private static TopiValue SumPrint(IntPtr argsPtr, byte count)
         {
+            var args = TopiValue.CreateArgs(argsPtr, count);
+            var a = args[0];
+            var b = args[1];
             Console.WriteLine($"SumPrint:: {a.Float + b.Float}");
+            return default;
         }
 
 
-        [Topi("sqr")]
-        private static TopiValue Sqr(TopiValue value)
+        [Topi("sqr", 1)]
+        private static TopiValue Sqr(IntPtr argsPtr, byte count)
         {
+            var value = TopiValue.CreateArgs(argsPtr, count)[0];
             var i = value.Int;
             return new TopiValue(i * i);
         }
@@ -91,9 +98,12 @@ namespace PeartreeGames.Topiary.Test
         public void Run()
         {
             var data = File.ReadAllBytes("./test.topib");
-            var dialogue = new Dialogue(data, OnLine, OnChoices, Library.Severity.Warn);
-            Library.OnDebugLogMessage += LogMsg;
-            dialogue.BindFunctions(new[] {typeof(Tests).Assembly});
+            var dialogue = new Dialogue(data, OnLine, OnChoices, Library.Log, Library.Severity.Debug);
+            dialogue.Set(Sqr);
+            dialogue.Set(SqrPrint);
+            dialogue.Set(StrPrint);
+            dialogue.Set(SumPrint);
+            
             var print = new Delegates.Subscriber(Print);
             dialogue.Subscribe("value", print);
             dialogue.Subscribe("nope", print);
@@ -125,9 +135,7 @@ namespace PeartreeGames.Topiary.Test
         {
             Console.WriteLine(_state);
             var data = File.ReadAllBytes("./test.topib");
-            var dialogue = new Dialogue(data, OnLine, OnChoices, Library.Severity.Warn);
-            Library.OnDebugLogMessage += LogMsg;
-            dialogue.BindFunctions(new[] {typeof(Tests).Assembly});
+            var dialogue = new Dialogue(data, OnLine, OnChoices, Library.Log, Library.Severity.Debug);
             dialogue.LoadState(_state);
             using var list = dialogue.GetValue("list");
             Console.WriteLine($"{list.tag} = {list}");
@@ -137,27 +145,5 @@ namespace PeartreeGames.Topiary.Test
             Console.WriteLine($"{map.tag} = {map}");
         }
 
-        private static void LogMsg(string msg, Library.Severity severity)
-        {
-            switch (severity)
-            {
-                case Library.Severity.Debug:
-                case Library.Severity.Info:
-                    Console.WriteLine(msg);
-                    break;
-                case Library.Severity.Warn:
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine(msg);
-                    break;
-                case Library.Severity.Error:
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                    Console.WriteLine(msg);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(severity), severity, null);
-            }
-
-            Console.ResetColor();
-        }
     }
 }

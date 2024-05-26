@@ -13,12 +13,18 @@ namespace PeartreeGames.Topiary
         /// Gets or sets the name of the function in the topi file.
         /// </summary>
         public string Name { get; private set; }
+        public byte Arity { get; private set; }
 
         /// <summary>
         /// Declare the function as an extern topi function
         /// Can only be used on static methods
         /// </summary>
         /// <param name="name">Name of the function in the topi file</param>
-        public TopiAttribute(string name) => Name = name;
+        /// <param name="arity">The number of arguments this function expects</param>
+        public TopiAttribute(string name, byte arity)
+        {
+            Name = name;
+            Arity = arity;
+        }
     }
 }

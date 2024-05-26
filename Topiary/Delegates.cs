@@ -43,13 +43,13 @@ namespace PeartreeGames.Topiary
         /// <summary>
         /// Delegate for creating a virtual machine.
         /// </summary>
-        /// <param name="source">The source code as a byte array.</param>
+        /// <param name="bytesPtr">The compiled code as a byte array.</param>
         /// <param name="sourceLength">The length of the source code.</param>
         /// <param name="onLinePtr">Pointer to the callback function for handling line output.</param>
         /// <param name="onChoicesPtr">Pointer to the callback function for handling choice selection.</param>
         /// <returns>A pointer to the created virtual machine.</returns>
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate IntPtr CreateVmDelegate(byte[] source, int sourceLength,
+        public delegate IntPtr CreateVmDelegate(IntPtr bytesPtr, int sourceLength,
             IntPtr onLinePtr,
             IntPtr onChoicesPtr);
 
