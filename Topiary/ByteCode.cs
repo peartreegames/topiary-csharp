@@ -33,5 +33,32 @@ namespace PeartreeGames.Topiary
 
             return result;
         }
+
+        public static string[] GetBoughs(BinaryReader reader)
+        {
+            var globalSymbolsCount = reader.ReadUInt64();
+            var indexSize = Marshal.SizeOf<uint>();
+            
+            for (ulong i = 0; i < globalSymbolsCount; i++)
+            {
+                var nameLength = reader.ReadByte();
+                reader.ReadBytes(nameLength); // skip name
+                reader.ReadBytes(indexSize); // skip globals index
+                reader.ReadByte();
+                reader.ReadByte(); // mutable
+            }
+
+            var boughCount = reader.ReadUInt64();
+            var result = new string[boughCount];
+            for (ulong i = 0; i < boughCount; i++)
+            {
+                var nameLength = reader.ReadByte();
+                var name = Encoding.UTF8.GetString(reader.ReadBytes(nameLength));
+                reader.ReadBytes(indexSize); // skip index
+                result[i] = name;
+            }
+
+            return result;
+        }
     }
 }
