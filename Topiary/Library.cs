@@ -80,6 +80,8 @@ namespace PeartreeGames.Topiary
                 SelectChoice = CreateDelegate<Delegates.SelectChoiceDelegate>("selectChoice");
                 TryGetValue = CreateDelegate<Delegates.TryGetValueDelegate>("tryGetValue");
                 DestroyValue = CreateDelegate<Delegates.DestroyValueDelegate>("destroyValue");
+                SetSubscriberCallback =
+                    CreateDelegate<Delegates.SetSubscriberCallback>("setSubscriberCallback");
                 Subscribe = CreateDelegate<Delegates.SubscribeDelegate>("subscribe");
                 Unsubscribe = CreateDelegate<Delegates.UnsubscribeDelegate>("unsubscribe");
                 SetExternNumber =
@@ -156,6 +158,7 @@ namespace PeartreeGames.Topiary
         public readonly Delegates.SelectChoiceDelegate SelectChoice;
         public readonly Delegates.TryGetValueDelegate TryGetValue;
         public readonly Delegates.DestroyValueDelegate DestroyValue;
+        public readonly Delegates.SetSubscriberCallback SetSubscriberCallback;
         public readonly Delegates.SubscribeDelegate Subscribe;
         public readonly Delegates.UnsubscribeDelegate Unsubscribe;
         public readonly Delegates.SetExternNumberDelegate SetExternNumber;

@@ -37,6 +37,7 @@ namespace PeartreeGames.Topiary.Test
         {
         }
 
+        [Test]
         public void CompileAndRun()
         {
             Compile();
@@ -44,7 +45,6 @@ namespace PeartreeGames.Topiary.Test
             RunLoaded();
         }
 
-        [Test]
         public void Compile()
         {
             var compiled = Dialogue.Compile(Path.GetFullPath("./test.topi"), Library.Log);
@@ -53,8 +53,8 @@ namespace PeartreeGames.Topiary.Test
             Assert.That(Path.Exists("./test.topib"), Is.True);
         }
 
-        private static void Print(ref TopiValue value) =>
-            Console.WriteLine($"PRINT:: {value.tag} = {value.Value}");
+        private static void ValueSubscriber(string name, ref TopiValue value) =>
+            Console.WriteLine($"ValueSubscriber:: {name}: {value.tag} = {value.Value}");
 
         [Topi("strPrint", 1)]
         private static TopiValue StrPrint(IntPtr argsPtr, byte count)
@@ -65,7 +65,7 @@ namespace PeartreeGames.Topiary.Test
             return default;
         }
 
-        [Topi("sqrPrint", 2)]
+        [Topi("sqrPrint", 1)]
         private static TopiValue SqrPrint(IntPtr argsPtr, byte count)
         {
             var value = TopiValue.CreateArgs(argsPtr, count)[0];
@@ -94,7 +94,6 @@ namespace PeartreeGames.Topiary.Test
             return new TopiValue(i * i);
         }
 
-        [Test]
         public void Run()
         {
             var data = File.ReadAllBytes("./test.topib");
@@ -104,9 +103,10 @@ namespace PeartreeGames.Topiary.Test
             dialogue.Set(StrPrint);
             dialogue.Set(SumPrint);
             
-            var print = new Delegates.Subscriber(Print);
-            dialogue.Subscribe("value", print);
-            dialogue.Subscribe("nope", print);
+            var callback = new Delegates.Subscriber(ValueSubscriber);
+            dialogue.SetSubscribeCallback(callback);
+            dialogue.Subscribe("value");
+            dialogue.Subscribe("nope");
             try
             {
                 dialogue.Start();
@@ -120,7 +120,7 @@ namespace PeartreeGames.Topiary.Test
                 Console.WriteLine(e);
             }
 
-            dialogue.Unsubscribe("value", print);
+            dialogue.Unsubscribe("value");
             using var list = dialogue.GetValue("list");
             Console.WriteLine($"{list.tag} = {list}");
             using var set = dialogue.GetValue("set");
@@ -130,7 +130,6 @@ namespace PeartreeGames.Topiary.Test
             _state = dialogue.SaveState();
         }
 
-        [Test]
         public void RunLoaded()
         {
             Console.WriteLine(_state);

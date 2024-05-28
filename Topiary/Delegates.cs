@@ -38,7 +38,7 @@ namespace PeartreeGames.Topiary
         /// Provides methods to subscribe and unsubscribe to dialogue events.
         /// </summary>
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void Subscriber(ref TopiValue value);
+        public delegate void Subscriber(string name, ref TopiValue value);
 
         /// <summary>
         /// Delegate for creating a virtual machine.
@@ -155,12 +155,10 @@ namespace PeartreeGames.Topiary
         /// <param name="vmPtr">The pointer to the VM.</param>
         /// <param name="name">The name of the event to subscribe to.</param>
         /// <param name="nameLength">The length of the event name.</param>
-        /// <param name="callbackPtr">The pointer to the callback function.</param>
         /// <returns>True if the subscription is successful, otherwise false.</returns>
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public delegate bool SubscribeDelegate(IntPtr vmPtr, string name, int nameLength,
-            IntPtr callbackPtr);
+        public delegate bool SubscribeDelegate(IntPtr vmPtr, string name, int nameLength);
 
         /// <summary>
         /// Represents a delegate used for unregistering a callback function from the library.
@@ -168,12 +166,13 @@ namespace PeartreeGames.Topiary
         /// <param name="vmPtr">A pointer to the virtual machine instance.</param>
         /// <param name="name">The name of the callback function.</param>
         /// <param name="nameLength">The length of the callback function name.</param>
-        /// <param name="callbackPtr">A pointer to the callback function.</param>
         /// <returns>true if the callback function was successfully unregistered; otherwise, false.</returns>
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public delegate bool UnsubscribeDelegate(IntPtr vmPtr, string name, int nameLength,
-            IntPtr callbackPtr);
+        public delegate bool UnsubscribeDelegate(IntPtr vmPtr, string name, int nameLength);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void SetSubscriberCallback(IntPtr vmPtr, IntPtr callback);
 
         /// <summary>
         /// Delegate for the function that sets an external number in the library.
