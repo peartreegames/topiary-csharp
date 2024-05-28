@@ -209,23 +209,20 @@ namespace PeartreeGames.Topiary
         /// <param name="value">The value to be destroyed</param>
         public void DestroyValue(ref TopiValue value) => _library.DestroyValue(ref value);
 
+        public void SetSubscribeCallback(Delegates.Subscriber subscriber) => 
+            _library.SetSubscriberCallback(_vmPtr, Marshal.GetFunctionPointerForDelegate(subscriber));
+        
         /// <summary>
         /// Subscribe to when a Global variable changes
         /// </summary>
         /// <param name="name">The name of the variable</param>
-        /// <param name="callback">The callback to be executed on change</param>
-        public bool Subscribe(string name, Delegates.Subscriber callback) =>
-            _library.Subscribe(_vmPtr, name, name.Length,
-                Marshal.GetFunctionPointerForDelegate(callback));
+        public bool Subscribe(string name) => _library.Subscribe(_vmPtr, name, name.Length);
 
         /// <summary>
         /// Unsubscribe when a Global variable changes
         /// </summary>
         /// <param name="name">The name of the variable</param>
-        /// <param name="callback">The callback that was passed into Subscribe</param>
-        public bool Unsubscribe(string name, Delegates.Subscriber callback) =>
-            _library.Unsubscribe(_vmPtr, name, name.Length,
-                Marshal.GetFunctionPointerForDelegate(callback));
+        public bool Unsubscribe(string name) => _library.Unsubscribe(_vmPtr, name, name.Length);
 
         /// <summary>
         /// Set an Extern variable to a bool value

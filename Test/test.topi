@@ -18,6 +18,7 @@ sumPrint(calcValue, 0)
     sumPrint(1.23, 1.37)
     strPrint("TESTING")
     list[0] = 11
+    value = 222
     fork^ {
         ~ "Greet them." #lots #of #tags #added {
             :Drew: "Oh, uh, nice to meet you. My name is Drew."
