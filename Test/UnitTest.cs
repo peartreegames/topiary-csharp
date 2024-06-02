@@ -36,15 +36,7 @@ namespace PeartreeGames.Topiary.Test
         public void Setup()
         {
         }
-
-        [Test]
-        public void CompileAndRun()
-        {
-            Compile();
-            Run();
-            RunLoaded();
-        }
-
+        [Test, Order(1)] 
         public void Compile()
         {
             var compiled = Dialogue.Compile(Path.GetFullPath("./test.topi"), Library.Log);
@@ -94,6 +86,7 @@ namespace PeartreeGames.Topiary.Test
             return new TopiValue(i * i);
         }
 
+        [Test, Order(2)] 
         public void Run()
         {
             var data = File.ReadAllBytes("./test.topib");
@@ -130,6 +123,7 @@ namespace PeartreeGames.Topiary.Test
             _state = dialogue.SaveState();
         }
 
+        [Test, Order(3)] 
         public void RunLoaded()
         {
             Console.WriteLine(_state);
