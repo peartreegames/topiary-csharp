@@ -13,18 +13,19 @@ Current topiary v0.12.0
    - `public delegate void OnChoicesCallback(Dialogue dialogue, Choice[] choices);`
  - Create a new Dialogue with `var dialogue = new Dialogue(bytes, onLine, onChoices, logSeverity)`
  - Run your dialogue until the end, calling `dialogue.SelectContinue()` after every `onLine` and `dialogue.SelectChoice(int)` after every `onChoices` that's invoked.
-   - ```csharp
-        try
-        {
-            dialogue.Start();
-            // this example assumes onLine calls dialogue.SelectContinue() itself
-            while (dialogue.CanContinue) dialogue.Run();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-     ```
+ 
+```csharp
+try
+{
+    dialogue.Start();
+    // this example assumes onLine callback calls dialogue.SelectContinue() itself
+    while (dialogue.CanContinue) dialogue.Run();
+}
+catch (Exception e)
+{
+    Console.WriteLine(e);
+}
+```
      
 
 ## Examples
@@ -33,31 +34,38 @@ Check out the `Test/UnitTest.cs` for a very simple setup, as well as the [Topiar
 
 ## Functions
 
-Topiary provides a `TopiAttribute`, simply add `[Topi(name)]` where "name" matches the extern variable name in your .topi file. 
+Topiary provides a `TopiAttribute`, simply add `[Topi(name, argCount)]` where "name" matches the extern variable name in your .topi file
+and "argCount" is the number of arguments. 
 
-Any function with 0-4 `TopiValue` parameters and return type `void` or `TopiValue` is valid.
+Any static function with `IntPtr, byte` arguments and return type `TopiValue` is valid.
+Originally functions were wrapped and allowed for `TopiValue` arguments to hide the IntPtr
+and CreateArgs requirements, however Unity (the main use case for this package) will not work
+with this work flow. So a more manual approcate is required.
 
 ```csharp
 // .topi: extern const strPrint = |str| {}
 //  will be overriden with the C# function
-[Topi("strPrint")]
-private static void StrPrint(TopiValue value)
+[Topi("strPrint", 1)]
+private static TopiValue StrPrint(IntPtr argsPtr, byte count)
 {
-    var str = value.String;
+    var args = TopiValue.CreateArgs(argsPtr, count);
+    var str = args[0].String;
     Console.WriteLine($"StrPrint:: {str}");
+    return default;
 }
 
 // .topi: extern const sqr = |x| print("sqr: {x}")
 //  will be overriden with the C# function
-[Topi("sqr")]
-private static TopiValue Sqr(TopiValue value)
+[Topi("sqr", 1)]
+private static TopiValue Sqr(IntPtr argsPtr, byte count)
 {
-    var i = value.Int;
+    var args = TopiValue.CreateArgs(argsPtr, count);
+    var i = args[0].Int;
     return new TopiValue(i * i);
 }
 ```
 
-Then you can bind all the functions with the attribute in the assembly with `dialogue.BindFunctions(Assemblies[])`
+Then once you create your dialogue you can bind each function with `dialogue.Set(StrPrint);`
 
 ## Values
 
