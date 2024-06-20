@@ -77,7 +77,7 @@ namespace PeartreeGames.Topiary
 
         /// <summary>
         /// Compile a ".topi" file into bytes.
-        /// Should be saved to a ".topib" file
+        /// Should be saved to a ".topi.byte" file
         /// Will precalculate the required capacity
         /// </summary>
         /// <param name="fullPath">The file absolute path</param>
@@ -98,7 +98,7 @@ namespace PeartreeGames.Topiary
 
         /// <summary>
         /// Compile a ".topi" file into bytes.
-        /// Should be saved to a ".topib" file
+        /// Should be saved to a ".topi.byte" file
         /// </summary>
         /// <param name="fullPath">The file absolute path</param>
         /// <param name="capacity">Capacity for the bytecode output</param>

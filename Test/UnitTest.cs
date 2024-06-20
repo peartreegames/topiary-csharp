@@ -41,8 +41,8 @@ namespace PeartreeGames.Topiary.Test
         {
             var compiled = Dialogue.Compile(Path.GetFullPath("./test.topi"), Library.Log);
             Assert.That(compiled, Is.Not.Empty);
-            File.WriteAllBytes("./test.topib", compiled);
-            Assert.That(Path.Exists("./test.topib"), Is.True);
+            File.WriteAllBytes("./test.topi.byte", compiled);
+            Assert.That(Path.Exists("./test.topi.byte"), Is.True);
         }
 
         private static void ValueSubscriber(string name, ref TopiValue value) =>
@@ -89,7 +89,7 @@ namespace PeartreeGames.Topiary.Test
         [Test, Order(2)] 
         public void Run()
         {
-            var data = File.ReadAllBytes("./test.topib");
+            var data = File.ReadAllBytes("./test.topi.byte");
             var dialogue = new Dialogue(data, OnLine, OnChoices, Library.Log, Library.Severity.Debug);
             dialogue.Set(Sqr);
             dialogue.Set(SqrPrint);
@@ -127,7 +127,7 @@ namespace PeartreeGames.Topiary.Test
         public void RunLoaded()
         {
             Console.WriteLine(_state);
-            var data = File.ReadAllBytes("./test.topib");
+            var data = File.ReadAllBytes("./test.topi.byte");
             var dialogue = new Dialogue(data, OnLine, OnChoices, Library.Log, Library.Severity.Debug);
             dialogue.LoadState(_state);
             using var list = dialogue.GetValue("list");
