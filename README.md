@@ -1,3 +1,11 @@
+# Archived
+
+I've archived this repository for now. Too many concessions were given
+to make Unity work, it made more sense to keep them separate and duplicate things as needed.
+If someone ever needs this for their own engine I'll leave it here to help
+get them started. Though I'd recommend going back through the history, as there were
+more modern C# uses and kept things a lot cleaner.
+
 # Topiary C# Bindings
 
 This package provides a wrapper for [topiary](https://github.com/peartreegames/topiary) functions.
